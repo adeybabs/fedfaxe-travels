@@ -11,3 +11,8 @@ spring:
     mongodb:
       uri: ${MONGO_URI}
       database: fedFaxe
+
+
+jwt:
+  secret: your-256-bit-secret-key-replace-this
+  expiration: 86400000  # 1 day in milliseconds
