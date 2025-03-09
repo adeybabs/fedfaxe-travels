@@ -7,6 +7,8 @@ public class EnvConfig {
     private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
     public static String get(String key) {
-        return dotenv.get(key);
+        String value = dotenv.get(key);
+        return (value != null) ? value : System.getenv(key); // Fallback to system env
     }
 }
+

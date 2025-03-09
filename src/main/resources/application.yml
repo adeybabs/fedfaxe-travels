@@ -12,7 +12,10 @@ spring:
       uri: ${MONGO_URI}
       database: fedFaxe
 
-
 jwt:
-  secret: your-256-bit-secret-key-replace-this
+  secret: ${JWT_SECRET}
   expiration: 86400000  # 1 day in milliseconds
+
+amadeus:
+  api-key: ${AMADEUS_API_KEY}
+  api-secret: ${AMADEUS_API_SECRET}

@@ -25,7 +25,8 @@ public class JwtUtil {
 
     @Autowired
     public JwtUtil(JwtConfig jwtConfig) {
-        this.key = Keys.hmacShaKeyFor(jwtConfig.getSecretKey().getBytes());
+        this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtConfig.getSecretKey()));
+       // this.key = Keys.hmacShaKeyFor(jwtConfig.getSecretKey().getBytes());
         this.expirationTime = jwtConfig.getExpirationTime();
     }
 

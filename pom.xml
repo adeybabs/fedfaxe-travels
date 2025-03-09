@@ -69,10 +69,17 @@
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->
+		<dependency>
 			<groupId>io.github.cdimascio</groupId>
 			<artifactId>dotenv-java</artifactId>
-			<version>3.0.0</version>
+			<version>3.2.0</version>
 		</dependency>
+
 		<!--        NEW SWAGGER DOCS FOR SPRINGBOOT 3 above-->
 		<dependency>
 			<groupId>org.springdoc</groupId>
@@ -107,6 +114,13 @@
 			<version>0.11.2</version>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.amadeus/amadeus-java -->
+		<dependency>
+			<groupId>com.amadeus</groupId>
+			<artifactId>amadeus-java</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
