@@ -4,6 +4,7 @@ import com.project.fedfaxe.config.CustomAuthenticationEntryPoint;
 import com.project.fedfaxe.config.CustomOAuth2UserService;
 import com.project.fedfaxe.utils.OAuth2LoginSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -22,6 +23,9 @@ import java.util.Base64;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Value("${jwt.secret}")
+    private String secretKey;
+
     @Autowired
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler successHandler;
@@ -35,24 +39,6 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/", "/public/**", "/login**").permitAll() // Allow public routes
-//                        .requestMatchers("/oauth2/**").permitAll() // Allow OAuth2 endpoints
-//                        .anyRequest().authenticated() // Secure all other routes
-//                )
-//                .oauth2Login(oauth -> oauth
-//                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-//                        .successHandler(successHandler) // Handle OAuth2 login success
-//                )
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter
-//
-//        return http.build();
-//    }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    OAuth2LoginSuccessHandler successHandler,
@@ -75,16 +61,11 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public JwtDecoder jwtDecoder() {
-        String secretKey = "5acDNJ6oRMvebRpwY0j/kvHVzJxDaA70woyCgW1RBwI=";
         byte[] decodedKey = Base64.getDecoder().decode(secretKey);
         SecretKeySpec secretKeySpec = new SecretKeySpec(decodedKey, "HmacSHA256");
 
         return NimbusJwtDecoder.withSecretKey(secretKeySpec).build();
     }
-
-
-
 }

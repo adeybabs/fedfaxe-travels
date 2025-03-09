@@ -14,6 +14,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,7 +86,18 @@ public class AmadeusFlightService {
                     dto.setArrivalAirport(segment.get("arrival").get("iataCode").asText());
                     dto.setFlightType(segment.get("numberOfStops").asInt() == 0 ? "Direct flight" : "With stops");
                     dto.setAirline(segment.get("carrierCode").asText());
-                    dto.setPricePerAdult("NGN " + price.get("total").asText());
+
+                    // Convert price from EUR to NGN
+                    String currency = price.get("currency").asText();
+                    BigDecimal totalPrice = new BigDecimal(price.get("total").asText());
+
+                    if ("EUR".equals(currency)) {
+                        BigDecimal exchangeRate = getExchangeRate("EUR", "NGN");
+                        totalPrice = totalPrice.multiply(exchangeRate);
+                    }
+
+                    dto.setPricePerAdult("NGN " + totalPrice.toPlainString());
+
 
                     filteredFlights.add(dto);
                 }
@@ -94,6 +106,14 @@ public class AmadeusFlightService {
             log.error("Error processing Amadeus response: ", e);
         }
         return filteredFlights;
+    }
+
+    private BigDecimal getExchangeRate(String from, String to) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "https://api.exchangerate-api.com/v4/latest/" + from;
+
+        ResponseEntity<JsonNode> response = restTemplate.getForEntity(url, JsonNode.class);
+        return new BigDecimal(response.getBody().get("rates").get(to).asText());
     }
 
 }
