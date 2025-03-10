@@ -1,13 +1,14 @@
 package com.project.fedfaxe.model;
 
 
+import com.project.fedfaxe.model.dto.TravelClass;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,18 +21,18 @@ import java.time.LocalDateTime;
 public class Flight {
 
     @Id
-    private String id;
-
-    private String airline;
-    private String flightNumber;
-
-    private String departureAirportCode; // e.g., "LOS" (Lagos)
-    private String arrivalAirportCode;   // e.g., "JFK" (New York)
+    private String id; // MongoDB automatically generates an ObjectId
 
     private LocalDateTime departureTime;
     private LocalDateTime arrivalTime;
-    private BigDecimal price;
+    private String duration;
 
-    private String cabinClass; // Economy, Business, First Class
-    private boolean directFlight;
+    private String departureAirport;
+    private String arrivalAirport;
+    private String flightType;
+    private String airline;
+
+    private TravelClass travelClass; // Enum for class type
+
+    private BigDecimal pricePerAdult; // Using BigDecimal for accuracy
 }

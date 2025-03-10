@@ -13,12 +13,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class FlightSearchRequests {
 
-    private String departureAirportCode;  // e.g., "LOS" (Lagos)
-    private String arrivalAirportCode;    // e.g., "JFK" (New York)
-    private LocalDate departureDate;      // e.g., 2024-06-15
-    private LocalDate returnDate;         // Optional for round trips
-    private int passengerCount;           // Number of passengers
-    private String cabinClass;            // Economy, Business, First Class
-    private String airlineCode;           // Optional: Filter by airline (e.g., "BA" for British Airways)
+    private String origin;
+    private String destination;
+    private String departureDate;
+    private String returnDate; // Optional
+    private int adults;
+    private boolean directFlightOnly = false;
+    private String sortBy = "cheapest"; // Default sorting method
+    private String travelClass = "ECONOMY";
 
 }

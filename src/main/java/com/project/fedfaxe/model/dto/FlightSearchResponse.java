@@ -17,4 +17,7 @@ public class FlightSearchResponse {
     private String flightType;
     private String airline;
     private String pricePerAdult;
+    private TravelClass travelClass;
+    private int stops;
+
 }

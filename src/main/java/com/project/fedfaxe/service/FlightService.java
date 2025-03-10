@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface FlightService {
 
-    List<Flight> searchFlights(FlightSearchRequests request);
-    Flight addFlight(Flight flight);
-    Flight getFlightById(String id);
-    void deleteFlight(String id);
+//    List<Flight> searchFlights(FlightSearchRequests request);
+//    Flight addFlight(Flight flight);
+//    Flight getFlightById(String id);
+//    void deleteFlight(String id);
 }
