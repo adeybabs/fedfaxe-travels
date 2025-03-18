@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.fedfaxe.model.dto.AirlineMapper;
+import com.project.fedfaxe.model.dto.AirportResponse;
 import com.project.fedfaxe.model.dto.FlightSearchResponse;
 import com.project.fedfaxe.service.AmadeusFlightService;
 import com.project.fedfaxe.service.FlightService;
@@ -294,5 +295,15 @@ public class FlightController {
                 ))
                 .collect(Collectors.toList());
     }
+
+    @GetMapping("/search-airports")
+    public ResponseEntity<List<AirportResponse>> searchAirports(
+            @RequestParam String query) {
+
+        List<AirportResponse> airports = amadeusFlightService.searchAirports(query);
+        return ResponseEntity.ok(airports);
+    }
+
+
 
 }
