@@ -1,12 +1,17 @@
 package com.project.fedfaxe.service;
 
 import com.amadeus.Amadeus;
+import com.amadeus.Params;
+import com.amadeus.Response;
 import com.amadeus.exceptions.ResponseException;
+import com.amadeus.resources.Location;
+
 import com.amadeus.resources.FlightOfferSearch;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.fedfaxe.exception.FlightSearchException;
+import com.project.fedfaxe.model.dto.AirportResponse;
 import com.project.fedfaxe.model.dto.FlightSearchResponse;
 import com.project.fedfaxe.model.dto.TravelClass;
 import lombok.extern.slf4j.Slf4j;
@@ -154,5 +159,59 @@ public class AmadeusFlightService {
         ResponseEntity<JsonNode> response = restTemplate.getForEntity(url, JsonNode.class);
         return new BigDecimal(response.getBody().get("rates").get(to).asText());
     }
+
+
+
+    public List<AirportResponse> searchAirports(String query) {
+        try {
+
+            String countryCode = getCountryCode(query);  // Convert "China" → "CN"
+
+            Params params = Params.with("subType", "CITY,AIRPORT");
+
+            if (countryCode != null) {
+                params.and("countryCode", countryCode);  // Search all locations in "CN"
+            } else {
+                params.and("keyword", query);
+
+            }
+
+                Location[] locations = amadeus.referenceData.locations.get(params);
+
+            System.out.println("Raw API Response: " + Arrays.toString(locations)); // Debugging
+
+            List<AirportResponse> results = new ArrayList<>();
+
+            for (Location loc : locations) {
+                if (loc.getAddress() != null) {
+                    String formattedLocation = loc.getAddress().getCityName() + ", " + getCountryName(loc.getAddress().getCountryCode());
+                    results.add(new AirportResponse(loc.getName(), loc.getIataCode(), formattedLocation));
+                }
+            }
+
+            return results;
+        } catch (ResponseException e) {
+            throw new RuntimeException("Error fetching location data", e);
+        }
+    }
+
+
+    private String formatLocation(Location loc) {
+        return loc.getAddress() != null
+                ? loc.getAddress().getCityName() + ", " + getCountryName(loc.getAddress().getCountryCode())
+                : "Unknown location";
+    }
+
+    private String getCountryName(String countryCode) {
+        return new java.util.Locale("", countryCode).getDisplayCountry();
+    }
+
+    private String getCountryCode(String countryName) {
+        return Arrays.stream(Locale.getISOCountries())
+                .filter(code -> new Locale("", code).getDisplayCountry().equalsIgnoreCase(countryName))
+                .findFirst()
+                .orElse(null);
+    }
+
 
 }
