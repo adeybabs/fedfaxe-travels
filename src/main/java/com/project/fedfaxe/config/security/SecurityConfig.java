@@ -11,6 +11,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -46,7 +48,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login/google", "/oauth2/**").permitAll() // Allow login routes
+                        .requestMatchers("/login/google", "/oauth2/**", "/admin/**").permitAll() // Allow login routes
                         .requestMatchers("/api/**").authenticated() // Secure API routes
                         .anyRequest().permitAll()
                 )
@@ -67,5 +69,10 @@ public class SecurityConfig {
         SecretKeySpec secretKeySpec = new SecretKeySpec(decodedKey, "HmacSHA256");
 
         return NimbusJwtDecoder.withSecretKey(secretKeySpec).build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

@@ -296,6 +296,10 @@ public class FlightController {
                 .collect(Collectors.toList());
     }
 
+    @Operation(
+            summary = "Search Airports and Cities",
+            description = "Searches for airports and cities using a keyword (e.g., 'China', 'New York', 'Beijing'). If a country name is provided, it returns all locations in that country."
+    )
     @GetMapping("/search-airports")
     public ResponseEntity<List<AirportResponse>> searchAirports(
             @RequestParam String query) {

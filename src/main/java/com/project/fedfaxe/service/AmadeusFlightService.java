@@ -161,36 +161,6 @@ public class AmadeusFlightService {
     }
 
 
-//    public List<AirportResponse> searchAirports(String query) {
-//        try {
-//            Location[] locations = amadeus.referenceData.locations.get(
-//                    Params.with("keyword", query)
-//                            .and("subType", "CITY,AIRPORT"));
-//
-//            System.out.println("Raw API Response: " + Arrays.toString(locations));
-//            List<AirportResponse> airportResponses = new ArrayList<>();
-//
-//            for (Location loc : locations) {
-//                String country = loc.getAddress() != null ? loc.getAddress().getCountryCode() : "Unknown";
-//
-//                // Log only Nigerian airports
-//                if ("NG".equals(country)) {
-//                    System.out.println("Found Nigerian Airport: " + loc.getName() + " (" + loc.getIataCode() + ")");
-//                }
-//
-//
-//                airportResponses.add(new AirportResponse(
-//                        loc.getName(),
-//                        loc.getIataCode(),
-//                        formatLocation(loc)
-//                ));
-//            }
-//            return airportResponses;
-//
-//        } catch (ResponseException e) {
-//            throw new RuntimeException("Error fetching airport data", e);
-//        }
-//    }
 
     public List<AirportResponse> searchAirports(String query) {
         try {
