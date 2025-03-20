@@ -1,6 +1,7 @@
 package com.project.fedfaxe.config;
 
 import com.project.fedfaxe.model.User;
+import com.project.fedfaxe.model.enums.UserRole;
 import com.project.fedfaxe.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             newUser.setImageUrl(oauthUser.getAttribute("picture"));
             newUser.setProvider(userRequest.getClientRegistration().getRegistrationId());
             newUser.setProviderId(oauthUser.getAttribute("sub"));
+            newUser.setRole(UserRole.USER);
             userRepository.save(newUser);
         }
 

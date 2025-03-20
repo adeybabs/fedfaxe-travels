@@ -1,5 +1,6 @@
 package com.project.fedfaxe.model;
 
+import com.project.fedfaxe.model.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,5 +22,6 @@ public class User {
     private String imageUrl;
     private String provider; // GOOGLE
     private String providerId; // Google user ID
+    private UserRole role;
 
 }

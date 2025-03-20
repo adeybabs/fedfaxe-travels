@@ -1,10 +1,8 @@
 package com.project.fedfaxe.model.dto;
 
-import com.project.fedfaxe.model.Flight;
+import com.project.fedfaxe.model.enums.TravelClass;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter

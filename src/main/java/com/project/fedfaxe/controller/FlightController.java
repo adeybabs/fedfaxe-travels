@@ -40,16 +40,6 @@ public class FlightController {
     }
 
 
-
-    @Operation(
-            summary = "Search Flights",
-            description = """
-        This endpoint allows users to search for flights based on multiple criteria. 
-        - You can filter by **direct flights** or allow stopovers.
-        - You can **sort by** price, duration, or recommendation.
-        - You can select a **specific travel class** (Economy, Business, First).
-        """
-    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Flights retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request parameters"),

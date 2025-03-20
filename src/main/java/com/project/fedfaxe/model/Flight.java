@@ -1,7 +1,7 @@
 package com.project.fedfaxe.model;
 
 
-import com.project.fedfaxe.model.dto.TravelClass;
+import com.project.fedfaxe.model.enums.TravelClass;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

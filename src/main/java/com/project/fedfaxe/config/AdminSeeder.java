@@ -1,6 +1,7 @@
 package com.project.fedfaxe.config;
 
 import com.project.fedfaxe.model.Admin;
+import com.project.fedfaxe.model.enums.UserRole;
 import com.project.fedfaxe.repository.AdminRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,11 +26,13 @@ public class AdminSeeder implements CommandLineRunner {
                 Admin.builder()
                         .email("admin@fedfaxe.com")
                         .password(passwordEncoder.encode("AdminSecret!")) // Securely hash password
+                        .role(UserRole.ADMIN)
                         .active(false)
                         .build(),
                 Admin.builder()
                         .email("admin2@fedfaxe.com")
                         .password(passwordEncoder.encode("Admin2Secret!")) // Second admin
+                        .role(UserRole.ADMIN)
                         .active(false)
                         .build()
         );

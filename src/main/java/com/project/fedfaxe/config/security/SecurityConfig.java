@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login/google", "/oauth2/**", "/admin/**").permitAll() // Allow login routes
+//                        .requestMatchers("/api/stays","/admin/**","/api/rides","/api/package").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated() // Secure API routes
                         .anyRequest().permitAll()
                 )
