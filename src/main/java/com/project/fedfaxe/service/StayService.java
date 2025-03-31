@@ -3,23 +3,29 @@ package com.project.fedfaxe.service;
 import com.project.fedfaxe.exception.ResourceNotFoundException;
 import com.project.fedfaxe.model.RoomCategory;
 import com.project.fedfaxe.model.Stay;
-import com.project.fedfaxe.model.dto.RoomCategoryResponse;
-import com.project.fedfaxe.model.dto.StayRequest;
-import com.project.fedfaxe.model.dto.StayResponse;
+import com.project.fedfaxe.model.dto.*;
 import com.project.fedfaxe.repository.RoomCategoryRepository;
 import com.project.fedfaxe.repository.StayRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StayService {
 
+    private final MongoTemplate mongoTemplate;
     private final StayRepository stayRepository;
     private final RoomCategoryRepository roomCategoryRepository;
+
+
 
 
     public StayResponse createStay(StayRequest request) {
@@ -27,6 +33,8 @@ public class StayService {
         stay.setName(request.getName());
         stay.setDescription(request.getDescription());
         stay.setAddress(request.getAddress());
+        stay.setCity(request.getCity());
+        stay.setCountry(request.getCountry());
         stay.setStarRating(request.getStarRating());
         stay.setAmenities(request.getAmenities());
         stay.setPropertyType(request.getPropertyType());
@@ -87,6 +95,8 @@ public class StayService {
                 .name(stay.getName())
                 .description(stay.getDescription())
                 .address(stay.getAddress())
+                .city(stay.getCity())
+                .country(stay.getCountry())
                 .starRating(stay.getStarRating())
                 .propertyType(stay.getPropertyType())
                 .amenities(stay.getAmenities())
@@ -100,4 +110,70 @@ public class StayService {
     }
 
 
+    public List<StaySearchResponse> searchStays(StaySearchRequest request) {
+        Query query = new Query();
+
+        // 🔍 Filter by City (Case-insensitive, partial match)
+        if (request.getCity() != null) {
+            query.addCriteria(Criteria.where("city").regex(".*" + request.getCity() + ".*", "i"));
+        }
+
+        // 🔍 Filter by Country (Case-insensitive, partial match)
+        if (request.getCountry() != null) {
+            query.addCriteria(Criteria.where("country").regex(".*" + request.getCountry() + ".*", "i"));
+        }
+
+        // 🔥 Execute Query
+        List<Stay> stays = mongoTemplate.find(query, Stay.class);
+
+        // 🏷️ Filter By Price Range (Apply in Java)
+        if (request.getMinPrice() != null && request.getMaxPrice() != null) {
+            stays = stays.stream()
+                    .filter(stay -> stay.getRoomCategories() != null &&
+                            stay.getRoomCategories().stream()
+                                    .anyMatch(room -> room.getPrice() >= request.getMinPrice()
+                                            && room.getPrice() <= request.getMaxPrice()))
+                    .collect(Collectors.toList());
+        }
+
+        // 🔍 Filter by Minimum Units Available in Room Categories
+        if (request.getMinUnitsAvailable() != null) {
+            query.addCriteria(Criteria.where("roomCategories.unitsAvailable").gte(request.getMinUnitsAvailable()));
+        }
+
+        // 🔀 Apply Sorting Based on User Selection
+        if ("cheapest".equalsIgnoreCase(request.getSortBy())) {
+            stays.sort(Comparator.comparingDouble(this::getMinPrice)); // Sort by lowest room price
+        } else if ("highestRating".equalsIgnoreCase(request.getSortBy()) || "recommended".equalsIgnoreCase(request.getSortBy())) {
+            stays.sort(Comparator.comparingInt(Stay::getStarRating).reversed()); // Highest rating first
+        }
+
+        // 🔄 Convert to StaySearchResponse and include checkIn/checkOut
+        return stays.stream()
+                .map(stay -> StaySearchResponse.builder()
+                        .id(stay.getId())
+                        .name(stay.getName())
+                        .description(stay.getDescription())
+                        .address(stay.getAddress())
+                        .city(stay.getCity())
+                        .country(stay.getCountry())
+                        .starRating(stay.getStarRating())
+                        .propertyType(stay.getPropertyType())
+                        .amenities(stay.getAmenities())
+                        .images(stay.getImages())
+                        .checkIn(request.getCheckInDate())  // ✅ Attach Check-in
+                        .checkOut(request.getCheckOutDate()) // ✅ Attach Check-out
+                        .roomCategories(stay.getRoomCategories())
+                        .build()
+                ).collect(Collectors.toList());
+    }
+
+
+    // ✅ Get the Minimum Price From Room Categories
+    private Double getMinPrice(Stay stay) {
+        return stay.getRoomCategories().stream()
+                .map(RoomCategory::getPrice)  // Extract room prices
+                .min(Double::compareTo)       // Get the lowest price
+                .orElse(Double.MAX_VALUE);    // Default to max value if no rooms exist
+    }
 }

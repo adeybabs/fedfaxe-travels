@@ -11,6 +11,7 @@ spring:
     mongodb:
       uri: ${MONGO_URI}
       database: fedFaxe
+      #uri: mongodb+srv://fedfaxeAdmin:adminsecret@cluster0.rjvyk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
 
 jwt:
   secret: ${JWT_SECRET}

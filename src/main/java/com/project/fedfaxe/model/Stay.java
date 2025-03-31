@@ -21,6 +21,8 @@ public class Stay {
     private String name;
     private String description;
     private String address;
+    private String city;
+    private String country;
     private int starRating;
     private String propertyType;
     private List<String> amenities;
