@@ -48,11 +48,11 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login/google", "/oauth2/**", "/admin/**").permitAll() // Allow login routes
-//                        .requestMatchers("/api/stays","/admin/**","/api/rides","/api/package").hasRole("ADMIN")
-                        .requestMatchers("/api/**").authenticated() // Secure API routes
+                        .requestMatchers("/login/google", "/oauth2/**", "/api/admin/**","/api/flights/**").permitAll() // Allow login routes
+                        .requestMatchers("/api/package/**", "/api/rides/**","/api/stays/**", "/api/booking/**").authenticated() // Secure API routes
                         .anyRequest().permitAll()
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login/google") // Ensure only this endpoint triggers Google OAuth2
                         .successHandler(successHandler)

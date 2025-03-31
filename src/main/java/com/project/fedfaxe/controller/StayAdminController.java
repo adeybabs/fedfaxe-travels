@@ -1,9 +1,13 @@
 package com.project.fedfaxe.controller;
 
+import com.project.fedfaxe.model.Stay;
 import com.project.fedfaxe.model.dto.StayRequest;
 import com.project.fedfaxe.model.dto.StayResponse;
+import com.project.fedfaxe.model.dto.StaySearchRequest;
+import com.project.fedfaxe.model.dto.StaySearchResponse;
 import com.project.fedfaxe.service.StayService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,6 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Tag(name = "Stay Management", description = "Endpoints for managing stays (Admin Only)")
 @RequiredArgsConstructor
@@ -51,6 +58,24 @@ public class StayAdminController {
         StayResponse stayResponse = stayService.getStayById(stayId);
         return ResponseEntity.ok(stayResponse);
     }
+
+
+    @Operation(
+            summary = "Search stays",
+            description = "Search for stays based on city, country, price range, and minimum available units.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Search results returned successfully",
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = StayResponse.class)))),
+                    @ApiResponse(responseCode = "400", description = "Invalid search parameters")
+            }
+    )
+    @GetMapping("/search")
+    public ResponseEntity<List<StaySearchResponse>> searchStays(@Valid StaySearchRequest searchRequest) {
+        List<StaySearchResponse> stayResponses = stayService.searchStays(searchRequest);
+        return ResponseEntity.ok(stayResponses);
+    }
+
+
 
     @Operation(
             summary = "Delete a stay",

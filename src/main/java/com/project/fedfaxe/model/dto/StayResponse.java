@@ -17,6 +17,8 @@ public class StayResponse {
     private String name;
     private String description;
     private String address;
+    private String city;
+    private String country;
     private int starRating;
     private String propertyType;
     private List<String> amenities;
@@ -29,6 +31,8 @@ public class StayResponse {
         this.name = stay.getName();
         this.description = stay.getDescription();
         this.address = stay.getAddress();
+        this.city = stay.getCity();
+        this.country = stay.getCountry();
         this.starRating = stay.getStarRating();
         this.propertyType = stay.getPropertyType();
         this.amenities = stay.getAmenities();
