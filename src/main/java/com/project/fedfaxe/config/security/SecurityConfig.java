@@ -52,7 +52,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/package/**", "/api/rides/**","/api/stays/**", "/api/booking/**").authenticated() // Secure API routes
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
+                //.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login/google") // Ensure only this endpoint triggers Google OAuth2
                         .successHandler(successHandler)
