@@ -4,11 +4,14 @@ import com.project.fedfaxe.model.PackageProduct;
 import com.project.fedfaxe.repository.PackageProductRepository;
 import com.project.fedfaxe.service.PackageProductService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -33,6 +36,20 @@ public class PackageAdminController {
         Optional<PackageProduct> packageProduct = packageProductService.getPackageById(id);
         return packageProduct.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(
+            summary = "Get all packages",
+            description = "Retrieves a list of all package products."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of package products retrieved successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping
+    public ResponseEntity<List<PackageProduct>> getAllPackages() {
+        List<PackageProduct> packages = packageProductService.getAllPackages();
+        return ResponseEntity.ok(packages);
     }
 
     @DeleteMapping("/{id}")

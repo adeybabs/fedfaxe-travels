@@ -5,6 +5,7 @@ import com.project.fedfaxe.repository.PackageProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,4 +29,9 @@ public class PackageProductService {
         }
         return false;
     }
+
+    public List<PackageProduct> getAllPackages() {
+        return packageProductRepository.findAll();
+    }
+
 }

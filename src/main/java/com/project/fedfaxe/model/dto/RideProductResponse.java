@@ -1,11 +1,18 @@
 package com.project.fedfaxe.model.dto;
 
 import com.project.fedfaxe.model.RideProduct;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
+@Builder
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RideProductResponse {
 
     private String id;

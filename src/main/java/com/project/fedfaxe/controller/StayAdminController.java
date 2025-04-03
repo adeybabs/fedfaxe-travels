@@ -1,10 +1,8 @@
 package com.project.fedfaxe.controller;
 
-import com.project.fedfaxe.model.Stay;
+
 import com.project.fedfaxe.model.dto.StayRequest;
 import com.project.fedfaxe.model.dto.StayResponse;
-import com.project.fedfaxe.model.dto.StaySearchRequest;
-import com.project.fedfaxe.model.dto.StaySearchResponse;
 import com.project.fedfaxe.service.StayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -59,22 +57,20 @@ public class StayAdminController {
         return ResponseEntity.ok(stayResponse);
     }
 
-
     @Operation(
-            summary = "Search stays",
-            description = "Search for stays based on city, country, price range, and minimum available units.",
+            summary = "Get all stays",
+            description = "Retrieves a list of all available stays.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Search results returned successfully",
+                    @ApiResponse(responseCode = "200", description = "List of stays retrieved successfully",
                             content = @Content(array = @ArraySchema(schema = @Schema(implementation = StayResponse.class)))),
-                    @ApiResponse(responseCode = "400", description = "Invalid search parameters")
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             }
     )
-    @GetMapping("/search")
-    public ResponseEntity<List<StaySearchResponse>> searchStays(@Valid StaySearchRequest searchRequest) {
-        List<StaySearchResponse> stayResponses = stayService.searchStays(searchRequest);
-        return ResponseEntity.ok(stayResponses);
+    @GetMapping
+    public ResponseEntity<List<StayResponse>> getAllStays() {
+        List<StayResponse> stays = stayService.getAllStays();
+        return ResponseEntity.ok(stays);
     }
-
 
 
     @Operation(

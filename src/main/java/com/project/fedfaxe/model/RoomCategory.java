@@ -14,7 +14,6 @@ public class RoomCategory {
 
     @Id
     private String id;
-
     private String type;
     private double price;
     private int unitsAvailable;
