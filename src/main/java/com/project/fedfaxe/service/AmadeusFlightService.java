@@ -158,37 +158,69 @@ public class AmadeusFlightService {
 
 
 
+//    public List<AirportResponse> searchAirports(String query) {
+//        try {
+//            String countryCode = getCountryCode(query);  // Convert "China" → "CN"
+//            Params params = Params.with("subType", "CITY,AIRPORT");
+//
+//            if (countryCode != null) {
+//                params.and("countryCode", countryCode);  // Search all locations in "CN"
+//            } else {
+//                params.and("keyword", query);
+//            }
+//            Location[] locations;
+//            try {
+//                locations = amadeus.referenceData.locations.get(params);
+//            } catch (com.amadeus.exceptions.ResponseException e) {
+//                log.error("Amadeus API error: {}, Status code: {}", e.getMessage(), e.getCode());
+//                // Provide a more user-friendly response or fallback to cached data
+//                throw new RuntimeException("Error fetching location data: " + e.getMessage(), e);
+//            }
+//            System.out.println("Raw API Response: " + Arrays.toString(locations)); // Debugging
+//            List<AirportResponse> results = new ArrayList<>();
+//
+//            for (Location loc : locations) {
+//                if (loc.getAddress() != null) {
+//                    String formattedLocation = loc.getAddress().getCityName() + ", " + getCountryName(loc.getAddress().getCountryCode());
+//                    results.add(new AirportResponse(loc.getName(), loc.getIataCode(), formattedLocation));
+//                }
+//            }
+//
+//            return results;
+//        } catch (ResponseException e) {
+//            throw new RuntimeException("Error fetching location data", e);
+//        }
+//    }
+
     public List<AirportResponse> searchAirports(String query) {
-        try {
+        String countryCode = getCountryCode(query);  // Convert "China" → "CN"
+        Params params = Params.with("subType", "CITY,AIRPORT");
 
-            String countryCode = getCountryCode(query);  // Convert "China" → "CN"
-
-            Params params = Params.with("subType", "CITY,AIRPORT");
-
-            if (countryCode != null) {
-                params.and("countryCode", countryCode);  // Search all locations in "CN"
-            } else {
-                params.and("keyword", query);
-
-            }
-
-                Location[] locations = amadeus.referenceData.locations.get(params);
-
-            System.out.println("Raw API Response: " + Arrays.toString(locations)); // Debugging
-
-            List<AirportResponse> results = new ArrayList<>();
-
-            for (Location loc : locations) {
-                if (loc.getAddress() != null) {
-                    String formattedLocation = loc.getAddress().getCityName() + ", " + getCountryName(loc.getAddress().getCountryCode());
-                    results.add(new AirportResponse(loc.getName(), loc.getIataCode(), formattedLocation));
-                }
-            }
-
-            return results;
-        } catch (ResponseException e) {
-            throw new RuntimeException("Error fetching location data", e);
+        if (countryCode != null) {
+            params.and("countryCode", countryCode);  // Search all locations in "CN"
+        } else {
+            params.and("keyword", query);
         }
+        Location[] locations;
+        try {
+            locations = amadeus.referenceData.locations.get(params);
+        } catch (com.amadeus.exceptions.ResponseException e) {
+            log.error("Amadeus API error: {}, Status code: {}", e.getMessage(), e.getCode());
+            // Provide a more user-friendly response or fallback to cached data
+            throw new RuntimeException("Error fetching location data: " + e.getMessage(), e);
+        }
+
+        System.out.println("Raw API Response: " + Arrays.toString(locations)); // Debugging
+        List<AirportResponse> results = new ArrayList<>();
+
+        for (Location loc : locations) {
+            if (loc.getAddress() != null) {
+                String formattedLocation = loc.getAddress().getCityName() + ", " + getCountryName(loc.getAddress().getCountryCode());
+                results.add(new AirportResponse(loc.getName(), loc.getIataCode(), formattedLocation));
+            }
+        }
+
+        return results;
     }
 
 

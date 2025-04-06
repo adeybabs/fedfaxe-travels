@@ -2,14 +2,20 @@ package com.project.fedfaxe.controller;
 
 import com.project.fedfaxe.model.dto.RideProductRequest;
 import com.project.fedfaxe.model.dto.RideProductResponse;
+import com.project.fedfaxe.model.dto.StayResponse;
 import com.project.fedfaxe.service.RideProductService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/rides")
@@ -40,6 +46,24 @@ public class RideAdminController {
         RideProductResponse response = rideProductService.getRideProductById(id);
         return ResponseEntity.ok(response);
     }
+
+
+    @Operation(
+            summary = "Get all ride products",
+            description = "Retrieves a list of all available ride products.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "List of ride products retrieved successfully",
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RideProductResponse.class)))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
+            }
+    )
+    @GetMapping
+    public ResponseEntity<List<RideProductResponse>> getAllRides() {
+        List<RideProductResponse> rides = rideProductService.getAllRideProducts();
+        return ResponseEntity.ok(rides);
+    }
+
+
 
     @Operation(summary = "Delete a ride product", description = "Deletes a ride product by ID.")
     @ApiResponses({

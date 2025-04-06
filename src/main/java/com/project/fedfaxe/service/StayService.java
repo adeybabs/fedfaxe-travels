@@ -7,6 +7,7 @@ import com.project.fedfaxe.model.dto.*;
 import com.project.fedfaxe.repository.RoomCategoryRepository;
 import com.project.fedfaxe.repository.StayRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -15,8 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StayService {
@@ -89,6 +92,26 @@ public class StayService {
         return stayRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 
+//    private StayResponse mapToResponse(Stay stay) {
+//        return StayResponse.builder()
+//                .id(stay.getId())
+//                .name(stay.getName())
+//                .description(stay.getDescription())
+//                .address(stay.getAddress())
+//                .city(stay.getCity())
+//                .country(stay.getCountry())
+//                .starRating(stay.getStarRating())
+//                .propertyType(stay.getPropertyType())
+//                .amenities(stay.getAmenities())
+//                .images(stay.getImages())
+//                .roomCategories(
+//                        stay.getRoomCategories().stream()
+//                                .map(RoomCategoryResponse::new)
+//                                .toList()
+//                )
+//                .build();
+//    }
+
     private StayResponse mapToResponse(Stay stay) {
         return StayResponse.builder()
                 .id(stay.getId())
@@ -102,9 +125,21 @@ public class StayService {
                 .amenities(stay.getAmenities())
                 .images(stay.getImages())
                 .roomCategories(
-                        stay.getRoomCategories().stream()
-                                .map(RoomCategoryResponse::new)
-                                .toList()
+                        stay.getRoomCategories() != null ?
+                                stay.getRoomCategories().stream()
+                                        .filter(Objects::nonNull)  // Filter out any null room categories
+                                        .map(roomCategory -> {
+                                            try {
+                                                return new RoomCategoryResponse(roomCategory);
+                                            } catch (Exception e) {
+                                                // Log the error and skip this room category
+                                                log.error("Error mapping room category: {}", e.getMessage());
+                                                return null;
+                                            }
+                                        })
+                                        .filter(Objects::nonNull)  // Filter out any failed mappings
+                                        .toList()
+                                : List.of()
                 )
                 .build();
     }

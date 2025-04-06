@@ -1,6 +1,7 @@
 package com.project.fedfaxe.model.dto;
 
 import lombok.Data;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.util.List;
 
@@ -15,4 +16,8 @@ public class RideProductRequest {
     private double pricePerKm;
     private String currency;
     private List<String> policies;
+    @Indexed
+    private String city;
+    @Indexed
+    private String country;
 }

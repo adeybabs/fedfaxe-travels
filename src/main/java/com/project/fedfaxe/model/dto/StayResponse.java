@@ -41,6 +41,6 @@ public class StayResponse {
                 ? stay.getRoomCategories().stream()
                 .map(RoomCategoryResponse::new)
                 .collect(Collectors.toList())
-                : List.of(); // Prevents NullPointerException
+                : List.of();
     }
 }

@@ -1,11 +1,19 @@
 package com.project.fedfaxe.model.dto;
 
 import com.project.fedfaxe.model.RideProduct;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.util.List;
 
+@Builder
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RideProductResponse {
 
     private String id;
@@ -17,6 +25,8 @@ public class RideProductResponse {
     private double pricePerKm;
     private String currency;
     private List<String> policies;
+    private String city;
+    private String country;
 
     public RideProductResponse(RideProduct rideProduct) {
         this.id = rideProduct.getId();
@@ -28,5 +38,7 @@ public class RideProductResponse {
         this.pricePerKm = rideProduct.getPricePerKm();
         this.currency = rideProduct.getCurrency();
         this.policies = rideProduct.getPolicies();
+        this.city = rideProduct.getCity();
+        this.country = rideProduct.getCountry();
     }
 }
