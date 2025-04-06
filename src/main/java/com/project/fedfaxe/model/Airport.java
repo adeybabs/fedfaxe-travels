@@ -15,9 +15,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Airport {
     @Id
     private String id;
-
     private String name;
     private String city;
     private String country;
     private String iataCode; // e.g., LOS for Lagos, ABV for Abuja
+    private String icaoCode;
+    private double latitude;
+    private double longitude;
+    private int altitude;
+    private float timezone;
+    private String dst;
+    private String timezoneName;
 }

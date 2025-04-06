@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -27,13 +28,9 @@ public class RideProduct {
     private double pricePerKm;
     private String currency;
     private List<String> policies;
+    @Indexed
+    private String city;
+    @Indexed
+    private String country;
 
-
-    // Optional route-specific fields
-    private String fromCity;
-    private String toCity;
-    private Double distanceInKm;
-    private Boolean isAirportTransfer;
-    private Boolean isHourlyRental;
-    private List<LocalDateTime> availableTimes;
 }
