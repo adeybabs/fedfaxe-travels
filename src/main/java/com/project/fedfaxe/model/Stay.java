@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,8 +27,7 @@ public class Stay {
     private int starRating;
     private String propertyType;
     private List<String> amenities;
-    private List<String> images;
-
+    private List<String> imageUrls;
     @DBRef(lazy = true)
     private List<RoomCategory> roomCategories;
 

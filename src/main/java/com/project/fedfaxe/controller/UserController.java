@@ -1,10 +1,8 @@
 package com.project.fedfaxe.controller;
 
 import com.project.fedfaxe.model.RideProduct;
-import com.project.fedfaxe.model.dto.RideDTO;
-import com.project.fedfaxe.model.dto.StayResponse;
-import com.project.fedfaxe.model.dto.StaySearchRequest;
-import com.project.fedfaxe.model.dto.StaySearchResponse;
+import com.project.fedfaxe.model.dto.*;
+import com.project.fedfaxe.model.enums.JourneyType;
 import com.project.fedfaxe.service.RideProductService;
 import com.project.fedfaxe.service.StayService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "User Management", description = "Endpoints for managing user searches and other unauthenticated user flows")
@@ -52,20 +52,10 @@ public class UserController {
         return ResponseEntity.ok(stayResponses);
     }
 
+
     @Operation(
             summary = "Search for available rides",
-            description = "This endpoint searches for available rides based on city, ride type, and other filters. It returns paginated results of ride products.",
-            parameters = {
-                    @Parameter(name = "fromCity", description = "The departure city for the ride", required = true),
-                    @Parameter(name = "toCity", description = "The destination city for the ride", required = false),
-                    @Parameter(name = "rideType", description = "The type of ride (e.g., private, shared)", required = false),
-                    @Parameter(name = "passengers", description = "Number of passengers", required = false),
-                    @Parameter(name = "luggage", description = "Amount of luggage (if any)", required = false),
-                    @Parameter(name = "page", description = "Page number for pagination (defaults to 0)", required = false),
-                    @Parameter(name = "size", description = "Page size for pagination (defaults to 10)", required = false),
-                    @Parameter(name = "sortBy", description = "The field to sort by (defaults to pricePerKm)", required = false),
-                    @Parameter(name = "sortDirection", description = "Sort direction (asc or desc, defaults to asc)", required = false)
-            },
+            description = "This endpoint searches for available rides. It returns paginated results of ride products.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -77,60 +67,65 @@ public class UserController {
             }
     )
     @GetMapping("rides/search")
-    public ResponseEntity<Page<RideDTO>> getRideResults(
-            @RequestParam String fromCity,
-            @RequestParam(required = false) String toCity,
-            @RequestParam(required = false) String rideType,
-            @RequestParam(required = false) Integer passengers,
-            @RequestParam(required = false) Integer luggage,
+    public ResponseEntity<RideSearchResponse> getRideResults(
+            @RequestParam(required = false) JourneyType journeyType, // journeyType for filtering
+            @RequestParam(required = false) String departureDate,
+            @RequestParam(required = false) String pickupTime,
+            @RequestParam(required = false) String pickupLocation,
+            @RequestParam(required = false) String dropoffLocation,
+            @RequestParam(defaultValue = "Recommended") String sortBy, // Sorting options: Recommended, Cheapest, Highest
+            @RequestParam(defaultValue = "asc") String sortDirection, // Sorting direction: asc or desc
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "pricePerKm") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection) {
+            @RequestParam(defaultValue = "10") int size) throws BadRequestException {
 
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ?
-                Sort.Direction.DESC : Sort.Direction.ASC;
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        if (departureDate != null) {
+            LocalDate date = LocalDate.parse(departureDate);
+            if (date.isBefore(LocalDate.now())) {
+                throw new BadRequestException("Departure date cannot be in the past");
+            }
+        }
+        // Set the sort direction based on 'asc' or 'desc' value
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
 
-        // Get ride products from database
-        Page<RideProduct> rideProducts = rideService.searchRideProducts(
-                fromCity, toCity, rideType, passengers, luggage, pageRequest);
+        // Set the sorting logic based on the 'sortBy' parameter
+        Sort sort;
+        switch (sortBy.toUpperCase()) {
+            case "CHEAPEST":
+                // For Cheapest, we sort by 'pricePerKm' in ascending order
+                sort = Sort.by(Sort.Order.asc("pricePerKm"));
+                break;
+            case "HIGHEST":
+                // For Highest, we sort by 'pricePerKm' in descending order
+                sort = Sort.by(Sort.Order.desc("pricePerKm"));
+                break;
+            case "RECOMMENDED":
+            default:
+                // For Recommended, no specific sorting (default behavior)
+                sort = Sort.unsorted();  // No sorting applied for recommended
+                break;
+        }
+        // Create a PageRequest object with the specified page size and sorting
+        PageRequest pageRequest = PageRequest.of(page, size, sort);
 
-        // Convert to DTOs
-        List<RideDTO> rideDTOs = RideDTO.fromRideProducts(rideProducts.getContent());
+        // Get all ride products from the database with pagination and filtering
+        Page<RideProduct> rideProducts = rideService.searchRideProducts(pageRequest);
 
-        // Create new page with DTOs
         Page<RideDTO> dtoPage = new PageImpl<>(
-                rideDTOs,
+                RideDTO.fromRideProducts(rideProducts.getContent()),
                 pageRequest,
-                rideProducts.getTotalElements()
-        );
+                rideProducts.getTotalElements());
 
-        return ResponseEntity.ok(dtoPage);
+        RideSearchResponse response = RideSearchResponse.builder()
+                .journeyType(journeyType)
+                .departureDate(departureDate)
+                .pickupTime(pickupTime)
+                .pickupLocation(pickupLocation)  // just echoing it back
+                .dropoffLocation(dropoffLocation)
+                .rides(dtoPage)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
-
-//    @GetMapping("rides/search")
-//    public ResponseEntity<Page<RideProduct>> searchRides(
-//            @RequestParam() String fromCity,
-//            @RequestParam(required = false) String toCity,
-//            @RequestParam(required = false) String rideType,
-//            @RequestParam(required = false) Integer passengerCapacity,
-//            @RequestParam(required = false) Integer luggageCapacity,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size,
-//            @RequestParam(defaultValue = "pricePerKm") String sortBy,
-//            @RequestParam(defaultValue = "asc") String sortDirection) {
-//
-//        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
-//        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(direction, sortBy));
-//
-//        Page<RideProduct> rides = rideService.searchRideProducts(
-//                fromCity, toCity, rideType, passengerCapacity, luggageCapacity, pageRequest);
-//
-//        return ResponseEntity.ok(rides);
-//    }
-
-
 
 
 }

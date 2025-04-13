@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login/google", "/oauth2/**", "/api/admin/**","/api/flights/**","/api/user/**","/api/airport/**").permitAll() // Allow login routes
-                        .requestMatchers("/api/package/**", "/api/rides/**","/api/stays/**", "/api/booking/**").authenticated() // Secure API routes
+                        .requestMatchers("/api/package/**", "/api/rides/**","/api/stays/**", "/api/booking/**", "/api/image/**").authenticated() // Secure API routes
                         .anyRequest().permitAll()
                 )
 

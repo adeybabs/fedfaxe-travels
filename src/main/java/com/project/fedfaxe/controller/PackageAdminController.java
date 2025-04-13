@@ -1,16 +1,21 @@
 package com.project.fedfaxe.controller;
 
 import com.project.fedfaxe.model.PackageProduct;
+import com.project.fedfaxe.model.dto.*;
 import com.project.fedfaxe.repository.PackageProductRepository;
 import com.project.fedfaxe.service.PackageProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,11 +29,16 @@ public class PackageAdminController {
 
     private final PackageProductService packageProductService;
 
+
     @PostMapping
     @Operation(summary = "Add a new package product", description = "Creates a new package product and returns the saved object.")
-    public ResponseEntity<PackageProduct> addPackage(@RequestBody PackageProduct packageProduct) {
-        return ResponseEntity.ok(packageProductService.addPackage(packageProduct));
+    public ResponseEntity<PackageResponse> createPackage(
+            @RequestBody @Valid PackageRequest request)  {
+
+        PackageResponse response = packageProductService.addPackage(request);
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a package product by ID", description = "Retrieves a package product based on the given ID.")
@@ -37,6 +47,7 @@ public class PackageAdminController {
         return packageProduct.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
 
     @Operation(
             summary = "Get all packages",

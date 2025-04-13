@@ -3,21 +3,20 @@ package com.project.fedfaxe.service;
 import com.project.fedfaxe.model.RideProduct;
 import com.project.fedfaxe.model.dto.RideProductRequest;
 import com.project.fedfaxe.model.dto.RideProductResponse;
+import com.project.fedfaxe.model.enums.JourneyType;
 import com.project.fedfaxe.repository.RideProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
-
 
 
 @Service
@@ -27,23 +26,24 @@ public class RideProductService {
     private final RideProductRepository rideProductRepository;
     private final MongoTemplate mongoTemplate;
 
+
     public RideProductResponse addRideProduct(RideProductRequest request) {
         RideProduct rideProduct = RideProduct.builder()
                 .rideType(request.getRideType())
                 .passengerCapacity(request.getPassengerCapacity())
                 .luggageCapacity(request.getLuggageCapacity())
                 .amenities(request.getAmenities())
-                .productImage(request.getProductImage())
+                .productImageUrl(request.getProductImageUrl())
                 .pricePerKm(request.getPricePerKm())
                 .currency(request.getCurrency())
                 .policies(request.getPolicies())
-                .city(request.getCity())
-                .country(request.getCountry())
                 .build();
 
+        // Save the ride product to the repository
         rideProduct = rideProductRepository.save(rideProduct);
         return mapToRideProductResponse(rideProduct);
     }
+
 
     public RideProductResponse getRideProductById(String id) {
         RideProduct rideProduct = rideProductRepository.findById(id)
@@ -65,7 +65,7 @@ public class RideProductService {
                 .passengerCapacity(rideProduct.getPassengerCapacity())
                 .luggageCapacity(rideProduct.getLuggageCapacity())
                 .amenities(rideProduct.getAmenities())
-                .productImage(rideProduct.getProductImage())
+                .productImageUrl(rideProduct.getProductImageUrl())
                 .pricePerKm(rideProduct.getPricePerKm())
                 .currency(rideProduct.getCurrency())
                 .policies(rideProduct.getPolicies())
@@ -82,50 +82,19 @@ public class RideProductService {
 
 
     public Page<RideProduct> searchRideProducts(
-            String fromCity, String toCity, String rideType,
-            Integer passengerCapacity, Integer luggageCapacity,
-            Pageable pageable) {
+            PageRequest pageRequest) {
 
-        Query query = new Query().with(pageable);
-        List<Criteria> criteria = new ArrayList<>();
+        // Create criteria for the search
+        Criteria criteria = new Criteria();
 
-        // Primary search criteria - city
-        criteria.add(Criteria.where("city").is(fromCity));
+        // Create the query with the criteria and apply pagination and sorting from PageRequest
+        Query query = new Query(criteria);
+        query.with(pageRequest);
 
-        // Optional filters
-        if (toCity != null && !toCity.isEmpty() && !fromCity.equals(toCity)) {
-            criteria.add(Criteria.where("servesCity").is(toCity));
-        }
+        List<RideProduct> rideProductsList = mongoTemplate.find(query, RideProduct.class);
 
-        if (rideType != null && !rideType.isEmpty()) {
-            criteria.add(Criteria.where("rideType").is(rideType));
-        }
-
-        if (passengerCapacity != null) {
-            criteria.add(Criteria.where("passengerCapacity").gte(passengerCapacity));
-        }
-
-        if (luggageCapacity != null) {
-            criteria.add(Criteria.where("luggageCapacity").gte(luggageCapacity));
-        }
-
-        // Combine all criteria with AND operator
-        if (!criteria.isEmpty()) {
-            query.addCriteria(new Criteria().andOperator(criteria.toArray(new Criteria[0])));
-        }
-
-        // Execute query to get matching rides
-        List<RideProduct> rides = mongoTemplate.find(query, RideProduct.class);
-
-        // Create a count query (without pagination) to calculate total elements
-        Query countQuery = new Query();
-        if (!criteria.isEmpty()) {
-            countQuery.addCriteria(new Criteria().andOperator(criteria.toArray(new Criteria[0])));
-        }
-
-        return PageableExecutionUtils.getPage(
-                rides,
-                pageable,
-                () -> mongoTemplate.count(countQuery, RideProduct.class));
+        // Create a PageImpl object to return the paginated result
+        return new PageImpl<>(rideProductsList, pageRequest, mongoTemplate.count(query, RideProduct.class));
     }
+
 }

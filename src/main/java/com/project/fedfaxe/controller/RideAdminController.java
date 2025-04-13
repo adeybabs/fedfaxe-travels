@@ -10,12 +10,18 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/rides")
@@ -25,16 +31,24 @@ public class RideAdminController {
 
     private final RideProductService rideProductService;
 
-    @Operation(summary = "Add a new ride product", description = "Creates a new ride product and returns the details.")
+
+
+    @Operation(summary = "Add a new ride product", description = "Creates a new ride product with previously uploaded image")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Ride product created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body")
     })
     @PostMapping
-    public ResponseEntity<RideProductResponse> addRideProduct(@RequestBody RideProductRequest request) {
+    public ResponseEntity<RideProductResponse> addRideProduct(
+            @RequestBody @Valid RideProductRequest request) {
+
+        // Call service to create the ride product
         RideProductResponse response = rideProductService.addRideProduct(request);
         return ResponseEntity.ok(response);
     }
+
+
+
 
     @Operation(summary = "Get a ride product by ID", description = "Retrieves the ride product details by ID.")
     @ApiResponses({

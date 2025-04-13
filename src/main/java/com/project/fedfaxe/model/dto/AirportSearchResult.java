@@ -5,10 +5,10 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class CitySearchResult {
+public class AirportSearchResult {
 
-    private String city;
     private String name;
-    private String country;
     private String iataCode;
+    private String city;
+    private String country;
 }

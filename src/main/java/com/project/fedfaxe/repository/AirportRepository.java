@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface AirportRepository extends MongoRepository<Airport, String> {
     List<Airport> findByCityContainingIgnoreCase(String cityName);
+    List<Airport> findByNameContainingIgnoreCase(String airportName);
     Optional<Airport> findByIataCode(String iataCode);
-    List<Airport> findByCountryIgnoreCase(String country);
 }

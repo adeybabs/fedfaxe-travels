@@ -11,11 +11,4 @@ import java.util.List;
 @Repository
 public interface FlightRepository extends MongoRepository<Flight, String> {
 
-    List<Flight> findByDepartureAirportAndArrivalAirportAndDepartureTimeBetweenAndTravelClass(
-            String departureAirport,
-            String arrivalAirport,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
-            TravelClass travelClass
-    );
 }

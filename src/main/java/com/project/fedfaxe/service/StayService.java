@@ -14,9 +14,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,11 +25,12 @@ public class StayService {
     private final MongoTemplate mongoTemplate;
     private final StayRepository stayRepository;
     private final RoomCategoryRepository roomCategoryRepository;
-
+    private final S3Service s3Service;
 
 
 
     public StayResponse createStay(StayRequest request) {
+        // Create Stay object
         Stay stay = new Stay();
         stay.setName(request.getName());
         stay.setDescription(request.getDescription());
@@ -41,8 +40,7 @@ public class StayService {
         stay.setStarRating(request.getStarRating());
         stay.setAmenities(request.getAmenities());
         stay.setPropertyType(request.getPropertyType());
-        stay.setImages(request.getImages());
-
+        stay.setImageUrls(request.getImageUrls());
         // Ensure roomCategories are saved first
         List<RoomCategory> roomCategories = request.getRoomCategories();
         if (roomCategories != null && !roomCategories.isEmpty()) {
@@ -50,7 +48,10 @@ public class StayService {
             stay.setRoomCategories(roomCategories);
         }
 
+        // Save Stay object to the database
         stayRepository.save(stay);
+
+        // Return the response
         return new StayResponse(stay);
     }
 
@@ -92,26 +93,6 @@ public class StayService {
         return stayRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 
-//    private StayResponse mapToResponse(Stay stay) {
-//        return StayResponse.builder()
-//                .id(stay.getId())
-//                .name(stay.getName())
-//                .description(stay.getDescription())
-//                .address(stay.getAddress())
-//                .city(stay.getCity())
-//                .country(stay.getCountry())
-//                .starRating(stay.getStarRating())
-//                .propertyType(stay.getPropertyType())
-//                .amenities(stay.getAmenities())
-//                .images(stay.getImages())
-//                .roomCategories(
-//                        stay.getRoomCategories().stream()
-//                                .map(RoomCategoryResponse::new)
-//                                .toList()
-//                )
-//                .build();
-//    }
-
     private StayResponse mapToResponse(Stay stay) {
         return StayResponse.builder()
                 .id(stay.getId())
@@ -123,7 +104,7 @@ public class StayService {
                 .starRating(stay.getStarRating())
                 .propertyType(stay.getPropertyType())
                 .amenities(stay.getAmenities())
-                .images(stay.getImages())
+                .imageUrls(stay.getImageUrls())
                 .roomCategories(
                         stay.getRoomCategories() != null ?
                                 stay.getRoomCategories().stream()
@@ -195,7 +176,7 @@ public class StayService {
                         .starRating(stay.getStarRating())
                         .propertyType(stay.getPropertyType())
                         .amenities(stay.getAmenities())
-                        .images(stay.getImages())
+                        .imageUrls(stay.getImageUrls())
                         .checkIn(request.getCheckInDate())  // ✅ Attach Check-in
                         .checkOut(request.getCheckOutDate()) // ✅ Attach Check-out
                         .roomCategories(stay.getRoomCategories())

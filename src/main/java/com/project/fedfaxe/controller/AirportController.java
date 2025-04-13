@@ -1,5 +1,6 @@
 package com.project.fedfaxe.controller;
 
+import com.project.fedfaxe.model.dto.AirportSearchResult;
 import com.project.fedfaxe.model.dto.CitySearchResult;
 import com.project.fedfaxe.service.AirportService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,32 +46,53 @@ public class AirportController {
 
 
     @Operation(
-            summary = "Get IATA code for a city",
-            description = "Returns the IATA code for the provided city name",
+            summary = "Search for airports by name",
+            description = "Returns a list of airports based on a search query",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "IATA code found"),
-                    @ApiResponse(responseCode = "404", description = "City not found")
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "List of airports found",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = CitySearchResult.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "No airports found")
             }
     )
-    @GetMapping("/city/code")
-    public ResponseEntity<String> getIataCode(@RequestParam String city) {
-        return airportService.getIataCodeForCity(city)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/search")
+    public List<AirportSearchResult> searchAirports(@RequestParam String query) {
+        return airportService.searchAirports(query);
     }
 
-    @Operation(
-            summary = "Get city by IATA code",
-            description = "Returns the city corresponding to the provided IATA code",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "City found"),
-                    @ApiResponse(responseCode = "404", description = "IATA code not found")
-            }
-    )
-    @GetMapping("/code/city")
-    public ResponseEntity<String> getCity(@RequestParam String code) {
-        return airportService.getCityForIataCode(code)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+
+//    @Operation(
+//            summary = "Get IATA code for a city",
+//            description = "Returns the IATA code for the provided city name",
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "IATA code found"),
+//                    @ApiResponse(responseCode = "404", description = "City not found")
+//            }
+//    )
+//    @GetMapping("/city/code")
+//    public ResponseEntity<String> getIataCode(@RequestParam String city) {
+//        return airportService.getIataCodeForCity(city)
+//                .map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+//    }
+//
+//    @Operation(
+//            summary = "Get city by IATA code",
+//            description = "Returns the city corresponding to the provided IATA code",
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "City found"),
+//                    @ApiResponse(responseCode = "404", description = "IATA code not found")
+//            }
+//    )
+//    @GetMapping("/code/city")
+//    public ResponseEntity<String> getCity(@RequestParam String code) {
+//        return airportService.getCityForIataCode(code)
+//                .map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+//    }
 }

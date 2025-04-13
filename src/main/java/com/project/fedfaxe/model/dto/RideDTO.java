@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,11 +23,12 @@ public class RideDTO {
     private int passengerCapacity;
     private int luggageCapacity;
     private List<String> amenities;
-    private String productImage;
+    private String productImageUrl;
     private double price;
     private String pricingInfo;
     private String currency;
-    private String location;
+    private List<String> policies;
+
 
 
     public static RideDTO fromRideProduct(RideProduct rideProduct) {
@@ -42,11 +44,11 @@ public class RideDTO {
                 .passengerCapacity(rideProduct.getPassengerCapacity())
                 .luggageCapacity(rideProduct.getLuggageCapacity())
                 .amenities(rideProduct.getAmenities())
-                .productImage(rideProduct.getProductImage())
+                .productImageUrl(rideProduct.getProductImageUrl())
                 .price(calculatedPrice)
                 .pricingInfo(pricingInfo)
                 .currency(rideProduct.getCurrency())
-                .location(rideProduct.getCity() + ", " + rideProduct.getCountry())
+                .policies(rideProduct.getPolicies())
                 .build();
     }
 

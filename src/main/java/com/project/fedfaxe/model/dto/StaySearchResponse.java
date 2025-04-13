@@ -22,7 +22,7 @@ public class StaySearchResponse {
     private int starRating;
     private String propertyType;
     private List<String> amenities;
-    private List<String> images;
+    private List<String> imageUrls;
     private LocalDate checkIn;  // ✅ Added Check-in
     private LocalDate checkOut; // ✅ Added Check-out
     private List<RoomCategory> roomCategories;

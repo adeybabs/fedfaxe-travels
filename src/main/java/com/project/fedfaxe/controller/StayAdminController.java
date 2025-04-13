@@ -1,8 +1,7 @@
 package com.project.fedfaxe.controller;
 
 
-import com.project.fedfaxe.model.dto.StayRequest;
-import com.project.fedfaxe.model.dto.StayResponse;
+import com.project.fedfaxe.model.dto.*;
 import com.project.fedfaxe.service.StayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -12,10 +11,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,9 +40,14 @@ public class StayAdminController {
             }
     )
     @PostMapping
-    public ResponseEntity<StayResponse> createStay(@RequestBody @Valid StayRequest request) {
-        return ResponseEntity.ok(stayService.createStay(request));
+    public ResponseEntity<StayResponse> createStay(
+            @RequestBody @Valid StayRequest request) {
+
+        StayResponse response = stayService.createStay(request);
+        return ResponseEntity.ok(response);
     }
+
+
 
     @Operation(
             summary = "Get stay details",

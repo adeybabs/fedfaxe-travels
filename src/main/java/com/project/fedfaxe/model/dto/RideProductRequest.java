@@ -1,7 +1,9 @@
 package com.project.fedfaxe.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -12,12 +14,10 @@ public class RideProductRequest {
     private int passengerCapacity;
     private int luggageCapacity;
     private List<String> amenities;
-    private String productImage; // Store image as URL or base64 string
+    private String productImageUrl;
+
     private double pricePerKm;
     private String currency;
     private List<String> policies;
-    @Indexed
-    private String city;
-    @Indexed
-    private String country;
+
 }

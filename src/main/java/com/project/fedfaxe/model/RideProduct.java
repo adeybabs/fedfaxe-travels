@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,13 +25,9 @@ public class RideProduct {
     private int passengerCapacity;
     private int luggageCapacity;
     private List<String> amenities;
-    private String productImage;
+    private String productImageUrl;
     private double pricePerKm;
     private String currency;
     private List<String> policies;
-    @Indexed
-    private String city;
-    @Indexed
-    private String country;
 
 }

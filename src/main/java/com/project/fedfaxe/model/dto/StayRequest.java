@@ -1,8 +1,10 @@
 package com.project.fedfaxe.model.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.fedfaxe.model.RoomCategory;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,7 +23,7 @@ public class StayRequest {
     private int starRating;
     private String propertyType;
     private List<String> amenities;
-    private List<String> images;
+    private List<String> imageUrls;
     private List<RoomCategory> roomCategories;
 
 
