@@ -12,7 +12,7 @@
 	<artifactId>fedfaxe</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>fedfaxe</name>
-	<description>Spring Boot project for a flight and hospitality booking Application</description>
+	<description>Spring Boot project for a flight and hospitality stayBooking Application</description>
 	<url/>
 	<licenses>
 		<license/>

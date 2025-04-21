@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Document(collection = "bookings")
-public class Booking {
+public class StayBooking {
 
     @Id
     private String id;
@@ -30,4 +30,23 @@ public class Booking {
     private String status = "PENDING"; // Default status
 
     private LocalDateTime createdAt;
+    private  LocalDateTime expiresAt;
+    private LocalDateTime paymentConfirmedAt;
+
+    // Guest details
+    private String guestTitle;
+    private String firstName;
+    private String surname;
+    private String middleName;
+    private String gender;
+    private String email;
+    private String phoneNumber;
+    private String whatsappNumber;
+    private String phoneNumber2;
+
+    // Extra options
+    private String pickupLocation;
+    private String dropoffLocation;
+    private String specialRequests;
+    private String paymentReference;
 }

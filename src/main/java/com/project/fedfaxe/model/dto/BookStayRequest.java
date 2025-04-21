@@ -1,9 +1,6 @@
 package com.project.fedfaxe.model.dto;
 
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -21,11 +18,43 @@ public class BookStayRequest {
     @NotBlank(message = "Room category ID is required")
     private String roomCategoryId;
 
-    @NotNull(message = "Check-in date is required")
     @FutureOrPresent(message = "Check-in date must be today or in the future")
     private LocalDate checkIn;
 
-    @NotNull(message = "Check-out date is required")
     @Future(message = "Check-out date must be in the future")
     private LocalDate checkOut;
+
+    // Guest details
+    @NotBlank(message = "Guest title is required")
+    private String title;
+
+    @NotBlank(message = "First name is required")
+    private String firstName;
+
+    @NotBlank(message = "Surname is required")
+    private String surname;
+
+    private String middleName;
+
+    @NotBlank(message = "Gender is required")
+    private String gender;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    @NotBlank(message = "Phone number is required")
+    private String phoneNumber;
+
+    private String whatsappNumber;
+    private String phoneNumber2;
+
+    // Additional fields
+    private String pickupLocation;
+    private String dropoffLocation;
+    private String specialRequests;
+
+    @AssertTrue(message = "You must accept the terms and conditions")
+    private Boolean termsAndConditions;
+
 }
