@@ -19,10 +19,9 @@ public class PaymentController {
     private final PaystackService paystackService;
 
 
-    @PostMapping("/init-stay-payment")
-    public ResponseEntity<InitializePaymentResponse> initStayPayment(@RequestBody @Valid BookStayRequest request,
-                                                                     @RequestHeader("X-USER-ID") String userId,
-                                                                     @RequestBody double totalPrice) {
-        return ResponseEntity.ok(paystackService.initializeStayPayment(request, userId, totalPrice));
-    }
+//    @PostMapping("/init-stay-payment")
+//    public ResponseEntity<InitializePaymentResponse> initStayPayment(@RequestBody @Valid BookStayRequest request,
+//                                                                     @RequestHeader("X-USER-ID") String userId) {
+//        return ResponseEntity.ok(paystackService.initializeStayPayment(request, userId));
+//    }
 }

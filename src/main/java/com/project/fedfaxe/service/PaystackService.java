@@ -38,7 +38,8 @@ public class PaystackService {
     private final BookingService bookingService;
     private final MongoTemplate mongoTemplate;
 
-    public InitializePaymentResponse initializeStayPayment(BookStayRequest request, String userId, double totalPrice) {
+
+    public InitializePaymentResponse initializeStayPayment(BookStayRequest request, String userId) {
         // Create pending booking first
         StayBooking stayBooking = bookingService.createPendingBooking(request, userId);
 

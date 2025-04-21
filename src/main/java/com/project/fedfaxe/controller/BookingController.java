@@ -4,6 +4,7 @@ import com.project.fedfaxe.model.StayBooking;
 import com.project.fedfaxe.model.RoomCategory;
 import com.project.fedfaxe.model.Stay;
 import com.project.fedfaxe.model.dto.BookStayRequest;
+import com.project.fedfaxe.model.dto.InitializePaymentResponse;
 import com.project.fedfaxe.repository.StayRepository;
 import com.project.fedfaxe.service.BookingService;
 import com.project.fedfaxe.service.PaystackService;
@@ -81,10 +82,10 @@ public class BookingController {
         double totalPrice = days * roomCategory.getPrice();
 
         // Initialize payment and get payment URL
-        String paymentUrl = String.valueOf(paystackService.initializeStayPayment(request, userId, totalPrice));
+        InitializePaymentResponse paymentResponse = paystackService.initializeStayPayment(request, userId);
 
         Map<String, String> response = new HashMap<>();
-        response.put("paymentUrl", paymentUrl);
+        response.put("paymentUrl", paymentResponse.getAuthorizationUrl());
         return ResponseEntity.ok(response);
     }
 
