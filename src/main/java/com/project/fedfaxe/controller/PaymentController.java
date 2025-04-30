@@ -1,12 +1,8 @@
 package com.project.fedfaxe.controller;
 
-import com.project.fedfaxe.model.dto.BookStayRequest;
-import com.project.fedfaxe.model.dto.InitializePaymentResponse;
 import com.project.fedfaxe.service.PaystackService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 

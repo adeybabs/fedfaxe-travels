@@ -47,25 +47,6 @@ public class AirportController {
     }
 
 
-    @Operation(
-            summary = "Search for airports by name",
-            description = "Returns a list of airports based on a search query",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "List of airports found",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = CitySearchResult.class)
-                            )
-                    ),
-                    @ApiResponse(responseCode = "404", description = "No airports found")
-            }
-    )
-    @GetMapping("/search")
-    public List<AirportSearchResult> searchAirports(@RequestParam String query) {
-        return airportService.searchAirports(query);
-    }
 
     @Operation(
             summary = "Search for airports and cities by name",
@@ -82,7 +63,7 @@ public class AirportController {
                     @ApiResponse(responseCode = "404", description = "No airports found")
             }
     )
-    @GetMapping("/combined-search")
+    @GetMapping("/search")
     public Map<String, List<?>> combinedSearch(@RequestParam String query) {
         return airportService.combinedSearch(query);
     }

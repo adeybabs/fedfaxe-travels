@@ -1,7 +1,8 @@
 package com.project.fedfaxe.controller;
 
 import com.project.fedfaxe.model.PackageProduct;
-import com.project.fedfaxe.model.dto.*;
+import com.project.fedfaxe.model.dto.request.PackageRequest;
+import com.project.fedfaxe.model.dto.response.PackageResponse;
 import com.project.fedfaxe.repository.PackageProductRepository;
 import com.project.fedfaxe.service.PackageProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,13 +10,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 

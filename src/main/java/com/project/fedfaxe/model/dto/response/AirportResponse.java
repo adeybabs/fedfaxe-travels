@@ -1,4 +1,4 @@
-package com.project.fedfaxe.model.dto;
+package com.project.fedfaxe.model.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

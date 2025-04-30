@@ -1,8 +1,8 @@
 package com.project.fedfaxe.controller;
 
 import com.project.fedfaxe.model.Admin;
-import com.project.fedfaxe.model.dto.AdminLoginRequest;
-import com.project.fedfaxe.model.dto.SetPasswordRequest;
+import com.project.fedfaxe.model.dto.request.AdminLoginRequest;
+import com.project.fedfaxe.model.dto.request.SetPasswordRequest;
 import com.project.fedfaxe.repository.AdminRepository;
 import com.project.fedfaxe.service.AdminService;
 import com.project.fedfaxe.utils.JwtUtil;
@@ -11,12 +11,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 

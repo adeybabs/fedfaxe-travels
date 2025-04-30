@@ -1,4 +1,4 @@
-package com.project.fedfaxe.model.dto;
+package com.project.fedfaxe.model.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

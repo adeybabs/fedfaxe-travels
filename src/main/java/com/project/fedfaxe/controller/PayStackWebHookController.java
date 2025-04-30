@@ -2,8 +2,6 @@ package com.project.fedfaxe.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.fedfaxe.model.StayBooking;
-import com.project.fedfaxe.model.enums.BookingStatus;
 import com.project.fedfaxe.repository.BookingRepository;
 import com.project.fedfaxe.service.BookingService;
 import com.project.fedfaxe.service.PaystackService;

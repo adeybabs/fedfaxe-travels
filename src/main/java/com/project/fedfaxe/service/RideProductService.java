@@ -1,9 +1,8 @@
 package com.project.fedfaxe.service;
 
 import com.project.fedfaxe.model.RideProduct;
-import com.project.fedfaxe.model.dto.RideProductRequest;
-import com.project.fedfaxe.model.dto.RideProductResponse;
-import com.project.fedfaxe.model.enums.JourneyType;
+import com.project.fedfaxe.model.dto.request.RideProductRequest;
+import com.project.fedfaxe.model.dto.response.RideProductResponse;
 import com.project.fedfaxe.repository.RideProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

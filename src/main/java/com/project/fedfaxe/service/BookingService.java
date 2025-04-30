@@ -1,26 +1,30 @@
 package com.project.fedfaxe.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.project.fedfaxe.model.StayBooking;
-import com.project.fedfaxe.model.RoomCategory;
-import com.project.fedfaxe.model.Stay;
-import com.project.fedfaxe.model.dto.BookStayRequest;
+import com.project.fedfaxe.model.*;
+import com.project.fedfaxe.model.dto.request.BookFlightRequest;
+import com.project.fedfaxe.model.dto.request.BookRideRequest;
+import com.project.fedfaxe.model.dto.request.BookStayRequest;
 import com.project.fedfaxe.model.enums.BookingStatus;
 import com.project.fedfaxe.repository.BookingRepository;
+import com.project.fedfaxe.repository.RideProductRepository;
 import com.project.fedfaxe.repository.StayRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingService {
@@ -28,6 +32,8 @@ public class BookingService {
     private final MongoTemplate mongoTemplate;
     private final StayRepository stayRepository;
     private final BookingRepository bookingRepository;
+    //private final EmailService emailService;
+    private final RideProductRepository rideRepository;
 
     public StayBooking bookStay(String userId, String stayId, String roomCategoryId, LocalDate checkIn,
                                 LocalDate checkOut, JsonNode metadata) {
@@ -61,8 +67,6 @@ public class BookingService {
                 .phoneNumber(metadata.path("phoneNumber").asText())
                 .whatsappNumber(metadata.path("whatsappNumber").asText(null))
                 .phoneNumber2(metadata.path("phoneNumber2").asText(null))
-                .pickupLocation(metadata.path("pickupLocation").asText(null))
-                .dropoffLocation(metadata.path("dropoffLocation").asText(null))
                 .specialRequests(metadata.path("specialRequests").asText(null))
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -71,7 +75,7 @@ public class BookingService {
     }
 
 
-    public StayBooking createPendingBooking(BookStayRequest request, String userId) {
+    public StayBooking createPendingStayBooking(BookStayRequest request, String userId) {
         // Validate stay and room availability
         Stay stay = stayRepository.findById(request.getStayId())
                 .orElseThrow(() -> new RuntimeException("Stay not found"));
@@ -110,8 +114,6 @@ public class BookingService {
                 .phoneNumber(request.getPhoneNumber())
                 .whatsappNumber(request.getWhatsappNumber())
                 .phoneNumber2(request.getPhoneNumber2())
-                .pickupLocation(request.getPickupLocation())
-                .dropoffLocation(request.getDropoffLocation())
                 .specialRequests(request.getSpecialRequests())
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(30)) // Payment expires after 30 mins
@@ -119,6 +121,71 @@ public class BookingService {
 
         return mongoTemplate.save(stayBooking);
     }
+
+    public FlightBooking createPendingFlightBooking(BookFlightRequest request, String userId) {
+
+        BigDecimal pricePerAdult = new BigDecimal(request.getPricePerAdult().replace("NGN", "").trim());
+        FlightBooking flightBooking = FlightBooking.builder()
+                .userId(userId)
+                .departureTime(request.getDepartureTime())
+                .arrivalTime(request.getArrivalTime())
+                .duration(request.getDuration())
+                .departureAirport(request.getDepartureAirport())
+                .arrivalAirport(request.getArrivalAirport())
+                .flightType(request.getFlightType())
+                .airline(request.getAirline())
+                .pricePerAdult(pricePerAdult)
+                .flightFare(pricePerAdult)  // Assuming the base fare is equal to the pricePerAdult
+                .taxes(BigDecimal.ZERO)     // Set taxes to zero for now, or modify based on your business logic
+                .discount(BigDecimal.ZERO)  // Set discount to zero, you can modify based on discounts
+                .airportLoungeSelected(request.getAirportLoungeSelected())
+                .wheelChairAssistanceSelected(request.getWheelChairAssistanceSelected())
+                .callReminderSelected(request.getCallReminderSelected())
+                .travelInsuranceSelected(request.getTravelInsuranceSelected())
+                .smsTicketDetailsSelected(request.getSmsTicketDetailsSelected())
+                .status(BookingStatus.PENDING_PAYMENT.name())  // Mark the booking as pending
+                .build();
+
+        flightBooking.calculateTotalPrice();
+        return mongoTemplate.save(flightBooking);
+    }
+
+
+    public RideBooking createPendingRideBooking(BookRideRequest request, String userId) {
+        // Validate stay and room availability
+        RideProduct ride = rideRepository.findById(request.getRideId())
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+
+        RideBooking rideBooking = RideBooking.builder()
+                .id(UUID.randomUUID().toString())
+                .userId(userId)
+                .rideId(request.getRideId())
+                .departureDate(request.getDepartureDate())
+                .dropOffLocation(request.getDropOffLocation())
+                .pickupLocation(request.getPickupLocation())
+                .pickupTime(request.getPickupTime())
+                .price(request.getPrice())
+                .status(BookingStatus.PENDING_PAYMENT.name())
+                .guestTitle(request.getTitle())
+                .firstName(request.getFirstName())
+                .surname(request.getSurname())
+                .middleName(request.getMiddleName())
+                .gender(request.getGender())
+                .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
+                .whatsappNumber(request.getWhatsappNumber())
+                .phoneNumber2(request.getPhoneNumber2())
+                .noteForDriver(request.getNoteForDriver())
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(30)) // Payment expires after 30 mins
+                .build();
+
+        return mongoTemplate.save(rideBooking);
+    }
+
+
+
 
     private boolean checkRoomAvailability(String stayId, String roomCategoryId,
                                           LocalDate checkIn, LocalDate checkOut) {
@@ -148,15 +215,29 @@ public class BookingService {
         return bookedRooms < totalRooms;
     }
 
+
+
+
     @Scheduled(fixedRate = 60 * 60 * 1000) // Run every hour
     public void cleanupExpiredBookings() {
+        log.info("Starting cleanup of expired bookings");
         LocalDateTime now = LocalDateTime.now();
-        List<StayBooking> expiredStayBookings = bookingRepository
-                .findByStatusAndExpiresAtBefore(BookingStatus.PENDING_PAYMENT.name(), now);
 
-        for (StayBooking stayBooking : expiredStayBookings) {
-            stayBooking.setStatus(BookingStatus.CANCELLED.name());
-            bookingRepository.save(stayBooking);
+        try {
+            List<StayBooking> expiredStayBookings = bookingRepository
+                    .findByStatusAndExpiresAtBefore(BookingStatus.PENDING_PAYMENT.name(), now);
+
+            log.info("Found {} expired bookings to cleanup", expiredStayBookings.size());
+
+            for (StayBooking stayBooking : expiredStayBookings) {
+                stayBooking.setStatus(BookingStatus.CANCELLED.name());
+                bookingRepository.save(stayBooking);
+
+                // Optionally notify user about cancellation
+              //  emailService.sendStayBookingCancellationNotice(stayBooking);
+            }
+        } catch (Exception e) {
+            log.error("Error during expired bookings cleanup", e);
         }
     }
 
@@ -168,6 +249,13 @@ public class BookingService {
 
         if ("CONFIRMED".equals(status)) {
             booking.setPaymentConfirmedAt(LocalDateTime.now());
+           // emailService.sendStayBookingConfirmation(booking);
+        }
+        else if ("PAYMENT_FAILED".equals(status)) {
+            // Extend expiration time to allow retry
+            booking.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+            // Send payment failure email
+           // emailService.sendStayPaymentFailureNotification(booking);
         }
 
         return mongoTemplate.save(booking);

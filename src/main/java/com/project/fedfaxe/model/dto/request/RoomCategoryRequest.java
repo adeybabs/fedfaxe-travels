@@ -1,4 +1,4 @@
-package com.project.fedfaxe.model.dto;
+package com.project.fedfaxe.model.dto.request;
 
 import lombok.Data;
 

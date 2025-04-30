@@ -1,10 +1,10 @@
 package com.project.fedfaxe.model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -12,19 +12,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(collection = "stay_bookings")
-public class StayBooking {
+@Document(collection = "ride_bookings")
+public class RideBooking {
 
     @Id
     private String id;
 
     private String userId;  // ID of the user making the booking
-    private String stayId;  // ID of the Stay being booked
-    private String roomCategoryId; // Room type booked
-
-    private LocalDate checkIn;
-    private LocalDate checkOut;
-    private double totalPrice;
+    private String rideId;
 
     @Builder.Default
     private String status = "PENDING"; // Default status
@@ -33,7 +28,11 @@ public class StayBooking {
     private  LocalDateTime expiresAt;
     private LocalDateTime paymentConfirmedAt;
 
-    // Guest details
+    private String departureDate;
+    private String pickupTime;
+    private double price;
+
+    // client details
     private String guestTitle;
     private String firstName;
     private String surname;
@@ -43,8 +42,9 @@ public class StayBooking {
     private String phoneNumber;
     private String whatsappNumber;
     private String phoneNumber2;
-
-    // Extra options
-    private String specialRequests;
+    private String pickupLocation;
+    private String dropOffLocation;
     private String paymentReference;
+    private String noteForDriver;
+
 }

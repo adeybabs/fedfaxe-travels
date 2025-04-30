@@ -1,10 +1,11 @@
 package com.project.fedfaxe.controller;
 
-import com.project.fedfaxe.model.StayBooking;
-import com.project.fedfaxe.model.RoomCategory;
-import com.project.fedfaxe.model.Stay;
-import com.project.fedfaxe.model.dto.BookStayRequest;
-import com.project.fedfaxe.model.dto.InitializePaymentResponse;
+import com.project.fedfaxe.model.*;
+import com.project.fedfaxe.model.dto.request.BookFlightRequest;
+import com.project.fedfaxe.model.dto.request.BookRideRequest;
+import com.project.fedfaxe.model.dto.request.BookStayRequest;
+import com.project.fedfaxe.model.dto.response.InitializePaymentResponse;
+import com.project.fedfaxe.repository.RideProductRepository;
 import com.project.fedfaxe.repository.StayRepository;
 import com.project.fedfaxe.service.BookingService;
 import com.project.fedfaxe.service.PaystackService;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,15 +39,14 @@ import java.util.Map;
 public class BookingController {
 
 
-    private final BookingService bookingService;
     private final StayRepository stayRepository;
+    private final RideProductRepository rideRepository;
+    private final PaystackService paystackService;
 
-    @Autowired
-    private PaystackService paystackService;
-
-    public BookingController(BookingService bookingService, StayRepository stayRepository) {
-        this.bookingService = bookingService;
+    public BookingController(StayRepository stayRepository, RideProductRepository rideRepository, PaystackService paystackService) {
         this.stayRepository = stayRepository;
+        this.rideRepository = rideRepository;
+        this.paystackService = paystackService;
     }
 
 
@@ -59,7 +60,7 @@ public class BookingController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/stay")
-    public ResponseEntity<Map<String, String>> initiateBooking(
+    public ResponseEntity<Map<String, String>> initiateStayBooking(
             @Valid @RequestBody BookStayRequest request,
             Authentication authentication
     ) {
@@ -79,7 +80,7 @@ public class BookingController {
                 .orElseThrow(() -> new RuntimeException("Room category not found"));
 
         long days = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
-        double totalPrice = days * roomCategory.getPrice();
+        //double totalPrice = days * roomCategory.getPrice();
 
         // Initialize payment and get payment URL
         InitializePaymentResponse paymentResponse = paystackService.initializeStayPayment(request, userId);
@@ -89,6 +90,99 @@ public class BookingController {
         return ResponseEntity.ok(response);
     }
 
+
+    @Operation(summary = "Book a flight", description = "Creates a new flight booking for an authenticated OAuth2 user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Booking successfully created",
+                    content = @Content(schema = @Schema(implementation = StayBooking.class))),
+            @ApiResponse(responseCode = "401", description = "User not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/flight")
+    public ResponseEntity<Map<String, String>> initiateFlightBooking(
+            @Valid @RequestBody BookFlightRequest request,
+            Authentication authentication
+    ) {
+        if (authentication == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        String userId = ((JwtAuthenticationToken) authentication).getToken().getSubject();
+        BigDecimal pricePerAdult = new BigDecimal(request.getPricePerAdult().replace("NGN", "").trim());
+
+        // Build the Flight object using Lombok's builder
+        Flight selectedFlight = Flight.builder()
+                .departureTime(request.getDepartureTime())
+                .arrivalTime(request.getArrivalTime())
+                .duration(request.getDuration())
+                .departureAirport(request.getDepartureAirport())
+                .arrivalAirport(request.getArrivalAirport())
+                .flightType(request.getFlightType())
+                .airline(request.getAirline())
+                .pricePerAdult(pricePerAdult)
+                .build();
+
+        FlightBooking flightBooking = FlightBooking.builder()
+                .userId(userId)
+                .departureTime(request.getDepartureTime())
+                .arrivalTime(request.getArrivalTime())
+                .duration(request.getDuration())
+                .departureAirport(request.getDepartureAirport())
+                .arrivalAirport(request.getArrivalAirport())
+                .flightType(request.getFlightType())
+                .airline(request.getAirline())
+                .pricePerAdult(pricePerAdult)
+                .flightFare(pricePerAdult)  // Assume the base fare is the same as the pricePerAdult for simplicity
+                .taxes(BigDecimal.ZERO)     // Set taxes as per your logic
+                .discount(BigDecimal.ZERO)  // Set discount as per your logic
+                .airportLoungeSelected(request.getAirportLoungeSelected())
+                .wheelChairAssistanceSelected(request.getWheelChairAssistanceSelected())
+                .callReminderSelected(request.getCallReminderSelected())
+                .travelInsuranceSelected(request.getTravelInsuranceSelected())
+                .smsTicketDetailsSelected(request.getSmsTicketDetailsSelected())
+                .build();
+
+        flightBooking.calculateTotalPrice();
+
+        // Initialize payment and get payment URL
+        InitializePaymentResponse paymentResponse = paystackService.initializeFlightPayment(request, userId);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("paymentUrl", paymentResponse.getAuthorizationUrl());
+        return ResponseEntity.ok(response);
+    }
+
+
+    @Operation(summary = "Book a ride", description = "Creates a new booking for an authenticated OAuth2 user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Booking successfully created",
+                    content = @Content(schema = @Schema(implementation = StayBooking.class))),
+            @ApiResponse(responseCode = "401", description = "User not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/ride")
+    public ResponseEntity<Map<String, String>> initiateRideBooking(
+            @Valid @RequestBody BookRideRequest request,
+            Authentication authentication
+    ) {
+        if (authentication == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        String userId = ((JwtAuthenticationToken) authentication).getToken().getSubject();
+
+        RideProduct ride = rideRepository.findById(request.getRideId())
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        // Initialize payment and get payment URL
+        InitializePaymentResponse paymentResponse = paystackService.initializeRidePayment(request, userId);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("paymentUrl", paymentResponse.getAuthorizationUrl());
+        return ResponseEntity.ok(response);
+    }
 
 
 

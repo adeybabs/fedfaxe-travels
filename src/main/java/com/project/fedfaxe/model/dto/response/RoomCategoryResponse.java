@@ -1,4 +1,4 @@
-package com.project.fedfaxe.model.dto;
+package com.project.fedfaxe.model.dto.response;
 
 import com.project.fedfaxe.model.RoomCategory;
 import lombok.*;

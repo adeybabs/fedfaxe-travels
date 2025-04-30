@@ -2,11 +2,14 @@ package com.project.fedfaxe.controller;
 
 import com.project.fedfaxe.model.RideProduct;
 import com.project.fedfaxe.model.dto.*;
+import com.project.fedfaxe.model.dto.request.StaySearchRequest;
+import com.project.fedfaxe.model.dto.response.RideSearchResponse;
+import com.project.fedfaxe.model.dto.response.StayResponse;
+import com.project.fedfaxe.model.dto.response.StaySearchResponse;
 import com.project.fedfaxe.model.enums.JourneyType;
 import com.project.fedfaxe.service.RideProductService;
 import com.project.fedfaxe.service.StayService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

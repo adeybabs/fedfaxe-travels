@@ -2,21 +2,20 @@ package com.project.fedfaxe.model;
 
 
 import com.project.fedfaxe.model.enums.TravelClass;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Document(collection= "flights")
 public class Flight {
 
@@ -25,7 +24,7 @@ public class Flight {
 
     private LocalDateTime departureTime;
     private LocalDateTime arrivalTime;
-    private String duration;
+    private Duration duration;
 
     private String departureAirport;
     private String arrivalAirport;
@@ -35,4 +34,5 @@ public class Flight {
     private TravelClass travelClass; // Enum for class type
 
     private BigDecimal pricePerAdult; // Using BigDecimal for accuracy
+    private int stops;
 }

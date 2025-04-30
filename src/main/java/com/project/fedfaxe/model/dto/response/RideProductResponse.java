@@ -1,13 +1,10 @@
-package com.project.fedfaxe.model.dto;
+package com.project.fedfaxe.model.dto.response;
 
 import com.project.fedfaxe.model.RideProduct;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
