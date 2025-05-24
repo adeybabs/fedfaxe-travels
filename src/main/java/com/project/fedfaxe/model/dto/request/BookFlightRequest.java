@@ -48,7 +48,7 @@ public class BookFlightRequest {
     // Flight details
     private LocalDateTime departureTime;
     private LocalDateTime arrivalTime;
-    private Duration duration;
+    private String duration;
     private String departureAirport;
     private String arrivalAirport;
     private String flightType;

@@ -1,12 +1,16 @@
 package com.project.fedfaxe.controller;
 
+import com.project.fedfaxe.model.PackageProduct;
+import com.project.fedfaxe.model.PriceAlert;
 import com.project.fedfaxe.model.RideProduct;
 import com.project.fedfaxe.model.dto.*;
+import com.project.fedfaxe.model.dto.request.PackageSearchRequest;
+import com.project.fedfaxe.model.dto.request.PriceAlertRequest;
 import com.project.fedfaxe.model.dto.request.StaySearchRequest;
-import com.project.fedfaxe.model.dto.response.RideSearchResponse;
-import com.project.fedfaxe.model.dto.response.StayResponse;
-import com.project.fedfaxe.model.dto.response.StaySearchResponse;
+import com.project.fedfaxe.model.dto.response.*;
 import com.project.fedfaxe.model.enums.JourneyType;
+import com.project.fedfaxe.model.enums.PackageType;
+import com.project.fedfaxe.service.PackageService;
 import com.project.fedfaxe.service.RideProductService;
 import com.project.fedfaxe.service.StayService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,13 +27,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "User Management", description = "Endpoints for managing user searches and other unauthenticated user flows")
 @RequiredArgsConstructor
@@ -39,6 +41,7 @@ public class UserController {
 
     private final StayService stayService;
     private final RideProductService rideService;
+    private final PackageService packageService;
 
     @Operation(
             summary = "Search stays",
@@ -128,6 +131,121 @@ public class UserController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("package/search")
+    public ResponseEntity<PackageSearchResponse> searchPackages(
+            @Valid PackageSearchRequest request) throws BadRequestException {
+
+        // Validate request
+        if (request.getCheckInDate() != null && request.getCheckInDate().isBefore(LocalDate.now())) {
+            throw new BadRequestException("Check-in date cannot be in the past");
+        }
+
+        if (request.getCheckOutDate() != null && request.getCheckInDate() != null
+                && request.getCheckOutDate().isBefore(request.getCheckInDate())) {
+            throw new BadRequestException("Check-out date cannot be before check-in date");
+        }
+
+        // Set defaults if not provided
+        if (request.getPage() == null) request.setPage(0);
+        if (request.getSize() == null) request.setSize(10);
+        if (request.getSortBy() == null) request.setSortBy("price");
+        if (request.getSortDirection() == null) request.setSortDirection("asc");
+
+        // Create pagination and sorting
+        Sort.Direction direction = request.getSortDirection().equalsIgnoreCase("desc") ?
+                Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Sort sort;
+        switch (request.getSortBy().toLowerCase()) {
+            case "price":
+                sort = Sort.by(direction, "priceWithFlights");
+                break;
+            case "rating":
+                sort = Sort.by(direction, "starRating");
+                break;
+            case "duration":
+                sort = Sort.by(direction, "duration");
+                break;
+            default:
+                sort = Sort.by(direction, "priceWithFlights");
+        }
+
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize(), sort);
+
+        // Execute search
+        Page<PackageProduct> packageResults = packageService.searchPackages(
+                request.getDestination(),
+                request.getCheckInDate(),
+                request.getCheckOutDate(),
+                request.getNumberOfTravelers(),
+                request.getMinNights(),
+                request.getMaxNights(),
+                request.getWithFlights(),
+                request.getMinBudget(),
+                request.getMaxBudget(),
+                request.getPackageTypes(),
+                pageRequest
+        );
+
+        // Get category counts
+        Map<PackageType, Long> typeCounts = packageService.getPackageTypeCounts(
+                request.getDestination(),
+                request.getCheckInDate(),
+                request.getCheckOutDate(),
+                request.getNumberOfTravelers(),
+                request.getMinNights(),
+                request.getMaxNights(),
+                request.getWithFlights(),
+                request.getMinBudget(),
+                request.getMaxBudget()
+        );
+
+        // Build response
+        PackageSearchResponse response = PackageSearchResponse.builder()
+                .destination(request.getDestination())
+                .checkInDate(request.getCheckInDate())
+                .checkOutDate(request.getCheckOutDate())
+                .numberOfTravelers(request.getNumberOfTravelers())
+                .minNights(request.getMinNights())
+                .maxNights(request.getMaxNights())
+                .withFlights(request.getWithFlights())
+                .minBudget(request.getMinBudget())
+                .maxBudget(request.getMaxBudget())
+                .totalPackages(Math.toIntExact(typeCounts.values().stream().mapToLong(Long::longValue).sum()))
+                .honeymoonPackages(typeCounts.getOrDefault(PackageType.HONEYMOON, 0L).intValue())
+                .familyPackages(typeCounts.getOrDefault(PackageType.FAMILY, 0L).intValue())
+                .luxuryPackages(typeCounts.getOrDefault(PackageType.LUXURY, 0L).intValue())
+                .packages(PackageDTO.fromPackageProducts(packageResults.getContent()))
+                .page(request.getPage())
+                .size(request.getSize())
+                .totalElements(packageResults.getTotalElements())
+                .totalPages(packageResults.getTotalPages())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("package/alert")
+    public ResponseEntity<PriceAlertResponse> createPriceAlert(
+            @RequestBody @Valid PriceAlertRequest request) {
+
+        PriceAlert alert = packageService.createPriceAlert(
+                request.getPackageId(),
+                request.getUserId(),
+                request.getTargetPrice(),
+                request.getEmail()
+        );
+
+        return ResponseEntity.ok(PriceAlertResponse.builder()
+                .alertId(alert.getId())
+                .packageId(alert.getPackageId())
+                .userId(alert.getUserId())
+                .targetPrice(alert.getTargetPrice())
+                .email(alert.getEmail())
+                .created(alert.getCreated())
+                .build());
     }
 
 

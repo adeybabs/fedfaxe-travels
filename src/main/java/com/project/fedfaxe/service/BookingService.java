@@ -3,10 +3,12 @@ package com.project.fedfaxe.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.project.fedfaxe.model.*;
 import com.project.fedfaxe.model.dto.request.BookFlightRequest;
+import com.project.fedfaxe.model.dto.request.BookPackageRequest;
 import com.project.fedfaxe.model.dto.request.BookRideRequest;
 import com.project.fedfaxe.model.dto.request.BookStayRequest;
 import com.project.fedfaxe.model.enums.BookingStatus;
 import com.project.fedfaxe.repository.BookingRepository;
+import com.project.fedfaxe.repository.PackageProductRepository;
 import com.project.fedfaxe.repository.RideProductRepository;
 import com.project.fedfaxe.repository.StayRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class BookingService {
     private final MongoTemplate mongoTemplate;
     private final StayRepository stayRepository;
     private final BookingRepository bookingRepository;
+    private final PackageProductRepository packageRepository;
     //private final EmailService emailService;
     private final RideProductRepository rideRepository;
 
@@ -185,6 +188,34 @@ public class BookingService {
     }
 
 
+    public PackageBooking createPendingPackageBooking(BookPackageRequest request, String userId) {
+        // Validate stay and room availability
+        PackageProduct packageProduct = packageRepository.findById(request.getPackageId())
+                .orElseThrow(() -> new RuntimeException("Package not found"));
+
+
+        PackageBooking packageBooking = PackageBooking.builder()
+                .id(UUID.randomUUID().toString())
+                .userId(userId)
+                .packageId(request.getPackageId())
+                .priceWithFlight(request.getPriceWithFlights())
+                .priceWithoutFlight(request.getPriceWithoutFlights())
+                .status(BookingStatus.PENDING_PAYMENT.name())
+                .guestTitle(request.getTitle())
+                .firstName(request.getFirstName())
+                .surname(request.getSurname())
+                .middleName(request.getMiddleName())
+                .gender(request.getGender())
+                .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
+                .whatsappNumber(request.getWhatsappNumber())
+                .phoneNumber2(request.getPhoneNumber2())
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(30)) // Payment expires after 30 mins
+                .build();
+
+        return mongoTemplate.save(packageBooking);
+    }
 
 
     private boolean checkRoomAvailability(String stayId, String roomCategoryId,

@@ -2,6 +2,7 @@ package com.project.fedfaxe.service;
 
 import com.project.fedfaxe.model.*;
 import com.project.fedfaxe.model.dto.request.BookFlightRequest;
+import com.project.fedfaxe.model.dto.request.BookPackageRequest;
 import com.project.fedfaxe.model.dto.request.BookRideRequest;
 import com.project.fedfaxe.model.dto.request.BookStayRequest;
 import com.project.fedfaxe.model.dto.response.InitializePaymentResponse;
@@ -23,6 +24,7 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -39,7 +41,6 @@ public class PaystackService {
     private final RestTemplate restTemplate;
     private final StayRepository stayRepository;
     private final RideProductRepository rideRepository;
-//    private final BookingService bookingService;
     private final MongoTemplate mongoTemplate;
     @Lazy
     private final BookingService bookingService;
@@ -109,9 +110,32 @@ public class PaystackService {
 
         String reference = "FL-" + flightBooking.getId().substring(0, 8);
         flightBooking.setPaymentReference(reference);
+
+        int adults = 1; // Default value
+        if (flightBooking.getAdults() != null) {
+            adults = flightBooking.getAdults();
+        }
+
+        // Calculate total price - ensure non-zero amount
+        BigDecimal flightFare = flightBooking.getFlightFare() != null ?
+                flightBooking.getFlightFare() : BigDecimal.ZERO;
+        BigDecimal totalPrice = flightFare.multiply(new BigDecimal(adults));
+
+        // Make sure we have a minimum price (e.g., 100 Naira = 10000 kobo)
+        if (totalPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            totalPrice = new BigDecimal("100");
+        }
+
+        // Convert to kobo and ensure we have an integer
+        int amountInKobo = totalPrice.multiply(new BigDecimal("100")).intValue();
+
+        // Ensure amount is at least 100 kobo (minimum for Paystack)
+        if (amountInKobo < 100) {
+            amountInKobo = 100;
+        }
         mongoTemplate.save(flightBooking);
 
-        BigDecimal totalPrice = flightBooking.getFlightFare().multiply(new BigDecimal(flightBooking.getAdults()));
+       // BigDecimal totalPrice = flightBooking.getFlightFare().multiply(new BigDecimal(flightBooking.getAdults()));
 
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("bookingType", "FLIGHT");
@@ -132,18 +156,16 @@ public class PaystackService {
 
         Map<String, Object> body = new HashMap<>();
         body.put("email", request.getEmail());
-        body.put("amount", totalPrice.multiply(new BigDecimal(100)).intValue()); // Paystack uses kobo (cents)
-        body.put("callback_url", "https://fedfaxetravels.com/verify-payment"); // Optional callback URL
+        body.put("amount", totalPrice.multiply(new BigDecimal(100)).intValue());
+        body.put("callback_url", "https://fedfaxetravels.com/verify-payment");
         body.put("metadata", metadata);
         body.put("reference", reference);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        // Step 6: Send the request to Paystack to initialize the payment
         ResponseEntity<Map> response = restTemplate.postForEntity(
                 "https://api.paystack.co/transaction/initialize", entity, Map.class);
 
-        // Step 7: Handle the response from Paystack
         if (response.getStatusCode() == HttpStatus.OK) {
             Map<String, Object> data = (Map<String, Object>) response.getBody().get("data");
             return InitializePaymentResponse.builder()
@@ -190,6 +212,58 @@ public class PaystackService {
         Map<String, Object> body = new HashMap<>();
         body.put("email", request.getEmail());
         body.put("amount", request.getPrice()); // Paystack uses kobo
+        body.put("callback_url", "https://fedfaxetravels.com//verify-payment"); // optional
+        body.put("metadata", metadata);
+        body.put("reference", reference);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(
+                "https://api.paystack.co/transaction/initialize", entity, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            Map<String, Object> data = (Map<String, Object>) response.getBody().get("data");
+            return InitializePaymentResponse.builder()
+                    .authorizationUrl((String) data.get("authorization_url"))
+                    .accessCode((String) data.get("access_code"))
+                    .reference((String) data.get("reference"))
+                    .build();
+        } else {
+            throw new RuntimeException("Failed to initialize payment");
+        }
+    }
+
+
+    public InitializePaymentResponse initializePackagePayment(BookPackageRequest request, String userId) {
+        // Create pending booking first
+        PackageBooking packageBooking = bookingService.createPendingPackageBooking(request, userId);
+
+        // Generate payment reference
+        String reference = "PK-" + packageBooking.getId().substring(0, 8);
+        packageBooking.setPaymentReference(reference);
+        mongoTemplate.save(packageBooking);
+
+        RideProduct ride = rideRepository.findById(request.getPackageId())
+                .orElseThrow(() -> new RuntimeException("Package not found"));
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(secretKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("bookingType", "RIDE");
+        metadata.put("userId", userId);
+        metadata.put("packageId", request.getPackageId());
+        metadata.put("currency", request.getCurrency());
+        metadata.put("guestName", request.getFirstName() + " " + request.getSurname());
+        metadata.put("email", request.getEmail());
+        metadata.put("phone", request.getPhoneNumber());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("email", request.getEmail());
+        body.put("price_with_flights", request.getPriceWithFlights());
+        body.put("priceWithoutFlights", request.getPriceWithoutFlights());
         body.put("callback_url", "https://fedfaxetravels.com//verify-payment"); // optional
         body.put("metadata", metadata);
         body.put("reference", reference);

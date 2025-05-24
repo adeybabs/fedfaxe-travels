@@ -26,7 +26,7 @@ public class FlightBooking {
     // Flight details
     private LocalDateTime departureTime;
     private LocalDateTime arrivalTime;
-    private Duration duration;
+    private String duration;
     private String departureAirport;
     private String arrivalAirport;
     private String flightType;
@@ -35,7 +35,8 @@ public class FlightBooking {
 
 
 
-    private int adults;
+    private Integer adults;
+
     private BigDecimal totalPrice;
     private BigDecimal flightFare;
     private BigDecimal taxes;

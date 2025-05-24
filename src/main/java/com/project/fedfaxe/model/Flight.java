@@ -24,7 +24,7 @@ public class Flight {
 
     private LocalDateTime departureTime;
     private LocalDateTime arrivalTime;
-    private Duration duration;
+    private String duration;
 
     private String departureAirport;
     private String arrivalAirport;

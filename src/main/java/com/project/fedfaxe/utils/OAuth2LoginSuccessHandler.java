@@ -27,7 +27,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String token = jwtUtil.generateToken(email);
 
         // Redirect frontend to fedfaxetravels.com with token
-        String redirectUrl = "https://fedfaxetravels.com?token=" + token;
+//        String redirectUrl = "https://fedfaxetravels.com?token=" + token;
+        String redirectUrl = "http://localhost:5173?token=" + token;
         response.sendRedirect(redirectUrl);
 
         // Return JSON response with JWT token

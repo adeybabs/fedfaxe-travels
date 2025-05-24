@@ -2,9 +2,11 @@ package com.project.fedfaxe.controller;
 
 import com.project.fedfaxe.model.*;
 import com.project.fedfaxe.model.dto.request.BookFlightRequest;
+import com.project.fedfaxe.model.dto.request.BookPackageRequest;
 import com.project.fedfaxe.model.dto.request.BookRideRequest;
 import com.project.fedfaxe.model.dto.request.BookStayRequest;
 import com.project.fedfaxe.model.dto.response.InitializePaymentResponse;
+import com.project.fedfaxe.repository.PackageProductRepository;
 import com.project.fedfaxe.repository.RideProductRepository;
 import com.project.fedfaxe.repository.StayRepository;
 import com.project.fedfaxe.service.BookingService;
@@ -22,10 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.ErrorResponse;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -41,11 +40,13 @@ public class BookingController {
 
     private final StayRepository stayRepository;
     private final RideProductRepository rideRepository;
+    private final PackageProductRepository packageRepository;
     private final PaystackService paystackService;
 
-    public BookingController(StayRepository stayRepository, RideProductRepository rideRepository, PaystackService paystackService) {
+    public BookingController(StayRepository stayRepository, RideProductRepository rideRepository, PackageProductRepository packageRepository, PaystackService paystackService) {
         this.stayRepository = stayRepository;
         this.rideRepository = rideRepository;
+        this.packageRepository = packageRepository;
         this.paystackService = paystackService;
     }
 
@@ -185,8 +186,34 @@ public class BookingController {
     }
 
 
+    @Operation(summary = "Book a package", description = "Creates a new booking for an authenticated OAuth2 user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Booking successfully created",
+                    content = @Content(schema = @Schema(implementation = StayBooking.class))),
+            @ApiResponse(responseCode = "401", description = "User not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/package")
+    public ResponseEntity<Map<String, String>> initiatePackageBooking(
+            @Valid @RequestBody BookPackageRequest request,
+            Authentication authentication
+    ) {
+        if (authentication == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        String userId = ((JwtAuthenticationToken) authentication).getToken().getSubject();
 
+        PackageProduct packages = packageRepository.findById(request.getPackageId())
+                .orElseThrow(() -> new RuntimeException("Package not found"));
 
+        // Initialize payment and get payment URL
+        InitializePaymentResponse paymentResponse = paystackService.initializePackagePayment(request, userId);
 
+        Map<String, String> response = new HashMap<>();
+        response.put("paymentUrl", paymentResponse.getAuthorizationUrl());
+        return ResponseEntity.ok(response);
+    }
 
 }
