@@ -1,7 +1,7 @@
 package com.project.fedfaxe.service;
 
 import com.project.fedfaxe.model.Admin;
-import com.project.fedfaxe.model.dto.SetPasswordRequest;
+import com.project.fedfaxe.model.dto.request.SetPasswordRequest;
 import com.project.fedfaxe.repository.AdminRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

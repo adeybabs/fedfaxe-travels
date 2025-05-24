@@ -1,7 +1,8 @@
 package com.project.fedfaxe.service;
 
 import com.project.fedfaxe.model.PackageProduct;
-import com.project.fedfaxe.model.dto.*;
+import com.project.fedfaxe.model.dto.request.PackageRequest;
+import com.project.fedfaxe.model.dto.response.PackageResponse;
 import com.project.fedfaxe.repository.PackageProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

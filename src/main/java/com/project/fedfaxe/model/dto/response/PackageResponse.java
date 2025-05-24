@@ -1,8 +1,7 @@
-package com.project.fedfaxe.model.dto;
+package com.project.fedfaxe.model.dto.response;
 
 import com.project.fedfaxe.model.PackageProduct;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 
 import java.util.List;
 

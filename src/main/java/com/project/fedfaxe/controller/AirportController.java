@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/airport")
@@ -45,13 +47,14 @@ public class AirportController {
     }
 
 
+
     @Operation(
-            summary = "Search for airports by name",
-            description = "Returns a list of airports based on a search query",
+            summary = "Search for airports and cities by name",
+            description = "Returns a list of airports and cities based on a search query",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "List of airports found",
+                            description = "List of airport and cities found",
                             content = @Content(
                                     mediaType = "application/json",
                                     schema = @Schema(implementation = CitySearchResult.class)
@@ -61,38 +64,10 @@ public class AirportController {
             }
     )
     @GetMapping("/search")
-    public List<AirportSearchResult> searchAirports(@RequestParam String query) {
-        return airportService.searchAirports(query);
+    public Map<String, List<?>> combinedSearch(@RequestParam String query) {
+        return airportService.combinedSearch(query);
     }
 
 
-//    @Operation(
-//            summary = "Get IATA code for a city",
-//            description = "Returns the IATA code for the provided city name",
-//            responses = {
-//                    @ApiResponse(responseCode = "200", description = "IATA code found"),
-//                    @ApiResponse(responseCode = "404", description = "City not found")
-//            }
-//    )
-//    @GetMapping("/city/code")
-//    public ResponseEntity<String> getIataCode(@RequestParam String city) {
-//        return airportService.getIataCodeForCity(city)
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }
-//
-//    @Operation(
-//            summary = "Get city by IATA code",
-//            description = "Returns the city corresponding to the provided IATA code",
-//            responses = {
-//                    @ApiResponse(responseCode = "200", description = "City found"),
-//                    @ApiResponse(responseCode = "404", description = "IATA code not found")
-//            }
-//    )
-//    @GetMapping("/code/city")
-//    public ResponseEntity<String> getCity(@RequestParam String code) {
-//        return airportService.getCityForIataCode(code)
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }
+
 }

@@ -2,14 +2,13 @@ package com.project.fedfaxe.service;
 
 import com.amadeus.Amadeus;
 import com.amadeus.Params;
-import com.amadeus.exceptions.ResponseException;
 import com.amadeus.resources.Location;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.fedfaxe.model.dto.AirportResponse;
-import com.project.fedfaxe.model.dto.FlightSearchResponse;
+import com.project.fedfaxe.model.dto.response.AirportResponse;
+import com.project.fedfaxe.model.dto.response.FlightSearchResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;

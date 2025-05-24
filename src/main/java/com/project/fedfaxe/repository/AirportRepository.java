@@ -5,6 +5,7 @@ import com.project.fedfaxe.model.Flight;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +14,6 @@ public interface AirportRepository extends MongoRepository<Airport, String> {
     List<Airport> findByCityContainingIgnoreCase(String cityName);
     List<Airport> findByNameContainingIgnoreCase(String airportName);
     Optional<Airport> findByIataCode(String iataCode);
+
+    Collection<Airport> findByIataCodeContainingIgnoreCase(String query);
 }

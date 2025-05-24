@@ -1,8 +1,7 @@
-package com.project.fedfaxe.model.dto;
+package com.project.fedfaxe.model.dto.response;
 
 import com.project.fedfaxe.model.Stay;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;

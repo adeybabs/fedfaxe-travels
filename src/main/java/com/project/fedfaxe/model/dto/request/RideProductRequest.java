@@ -1,9 +1,6 @@
-package com.project.fedfaxe.model.dto;
+package com.project.fedfaxe.model.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 

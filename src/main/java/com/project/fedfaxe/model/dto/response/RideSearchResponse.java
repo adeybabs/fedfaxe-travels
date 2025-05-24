@@ -1,5 +1,6 @@
-package com.project.fedfaxe.model.dto;
+package com.project.fedfaxe.model.dto.response;
 
+import com.project.fedfaxe.model.dto.RideDTO;
 import com.project.fedfaxe.model.enums.JourneyType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

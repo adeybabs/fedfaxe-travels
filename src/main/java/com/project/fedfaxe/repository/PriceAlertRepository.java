@@ -1,9 +1,9 @@
 package com.project.fedfaxe.repository;
 
-import com.project.fedfaxe.model.PackageProduct;
+import com.project.fedfaxe.model.PriceAlert;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PackageProductRepository extends MongoRepository<PackageProduct, String> {
+public interface PriceAlertRepository extends MongoRepository<PriceAlert, String> {
 }

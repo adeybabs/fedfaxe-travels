@@ -26,12 +26,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         // Generate JWT token
         String token = jwtUtil.generateToken(email);
 
-        // Return JSON response with JWT token
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"token\": \"" + token + "\"}");
+        // Redirect frontend to fedfaxetravels.com with token
+//        String redirectUrl = "https://fedfaxetravels.com?token=" + token;
+        String redirectUrl = "http://localhost:5173?token=" + token;
+        response.sendRedirect(redirectUrl);
 
-        // Send JWT token as response (Redirect frontend to store it)
-//        response.sendRedirect("http://localhost:3000/login-success?token=" + token);
+        // Return JSON response with JWT token
+//        response.setContentType("application/json");
+//        response.setCharacterEncoding("UTF-8");
+//        response.getWriter().write("{\"token\": \"" + token + "\"}");
     }
 }
