@@ -4,39 +4,47 @@ package com.project.fedfaxe.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.fedfaxe.model.Airport;
 import com.project.fedfaxe.model.dto.AirlineMapper;
+import com.project.fedfaxe.model.dto.bookingcom.BookingComApiResponse;
+import com.project.fedfaxe.model.dto.bookingcom.BookingComMapper;
 import com.project.fedfaxe.model.dto.response.AirportResponse;
+import com.project.fedfaxe.model.dto.response.FlightSearchLocalResponse;
 import com.project.fedfaxe.model.dto.response.FlightSearchResponse;
+import com.project.fedfaxe.repository.AirportRepository;
 import com.project.fedfaxe.service.AmadeusFlightService;
-import com.project.fedfaxe.service.FlightService;
+import com.project.fedfaxe.service.BookingComService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/flights")
 public class FlightController {
 
-    //private final FlightService flightService;
+    private final BookingComService bookingComService;
     private final AmadeusFlightService amadeusFlightService;
+    private final AirportRepository airportRepository;
 
-    public FlightController(FlightService flightService, AmadeusFlightService amadeusFlightService){
-        //this.flightService = flightService;
+    @Autowired
+    private BookingComMapper bookingComMapper;
+
+    public FlightController(BookingComService bookingComService, AmadeusFlightService amadeusFlightService, AirportRepository airportRepository){
+        this.bookingComService = bookingComService;
         this.amadeusFlightService = amadeusFlightService;
+        this.airportRepository = airportRepository;
     }
 
 
@@ -63,6 +71,42 @@ public class FlightController {
 
         return ResponseEntity.ok(flightData);
     }
+
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Flights retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/complete-search")
+    public ResponseEntity<?> searchCompleteFlights(
+            @RequestParam @Parameter(description = "Departure airport code (e.g., LOS)") String origin,
+            @RequestParam @Parameter(description = "Arrival airport code (e.g., LHR)") String destination,
+            @RequestParam @Parameter(description = "Departure date (format: YYYY-MM-DD)") String departureDate,
+            @RequestParam(required = false) @Parameter(description = "Return date (optional, format: YYYY-MM-DD)") String returnDate,
+            @RequestParam @Parameter(description = "Number of adults traveling") int adults,
+            @RequestParam(defaultValue = "false") @Parameter(description = "Set to 'true' to only show direct flights") boolean directFlightOnly,
+            @RequestParam(required = false, defaultValue = "cheapest")
+            @Parameter(description = "Sorting option (cheapest, fastest, recommended)")String sortBy,
+            @RequestParam(required = false, defaultValue = "ECONOMY")
+            @Parameter(description = "Travel class (ECONOMY, BUSINESS, FIRST)")String travelClass)
+    {
+        boolean isLocal = isLocalRoute(origin, destination);
+
+        if (isLocal) {
+            List<FlightSearchResponse> results = bookingComService.searchDomesticFlights(
+                    origin, destination, departureDate, adults);
+            return ResponseEntity.ok(results);
+
+
+        } else {
+            String result = amadeusFlightService.searchFlights(
+                    origin, destination, departureDate, returnDate,
+                    adults, directFlightOnly, sortBy, travelClass);
+            return ResponseEntity.ok(result);
+        }
+    }
+
 
     @Operation(
             summary = "Get available airlines and their prices",
@@ -299,5 +343,14 @@ public class FlightController {
     }
 
 
-
+    private boolean isLocalRoute(String origin, String destination) {
+        return airportRepository.findByIataCode(origin)
+                .map(Airport::getCountry)
+                .filter("Nigeria"::equalsIgnoreCase)
+                .isPresent() &&
+                airportRepository.findByIataCode(destination)
+                        .map(Airport::getCountry)
+                        .filter("Nigeria"::equalsIgnoreCase)
+                        .isPresent();
+    }
 }

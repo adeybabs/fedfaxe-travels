@@ -28,12 +28,21 @@ public class AdminSeeder implements CommandLineRunner {
                         .password(passwordEncoder.encode("AdminSecret!")) // Securely hash password
                         .role(UserRole.ADMIN)
                         .active(false)
+                        .preferredLanguage("en")
                         .build(),
                 Admin.builder()
                         .email("admin2@fedfaxe.com")
                         .password(passwordEncoder.encode("Admin2Secret!")) // Second admin
                         .role(UserRole.ADMIN)
                         .active(false)
+                        .preferredLanguage("en")
+                        .build(),
+                Admin.builder()
+                        .email("admin3@fedfaxe.com")  // New French admin
+                        .password(passwordEncoder.encode("Admin3Secret!"))
+                        .role(UserRole.ADMIN)
+                        .active(false)
+                        .preferredLanguage("fr")    // French locale
                         .build()
         );
 

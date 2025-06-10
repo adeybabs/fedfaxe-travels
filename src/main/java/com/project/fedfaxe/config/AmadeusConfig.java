@@ -18,6 +18,5 @@ public class AmadeusConfig {
     public Amadeus amadeus() {
         return Amadeus.builder(apiKey, apiSecret).build();
     }
-
 }
 

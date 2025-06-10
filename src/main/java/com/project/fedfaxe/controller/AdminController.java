@@ -1,6 +1,7 @@
 package com.project.fedfaxe.controller;
 
 import com.project.fedfaxe.model.Admin;
+import com.project.fedfaxe.model.User;
 import com.project.fedfaxe.model.dto.request.AdminLoginRequest;
 import com.project.fedfaxe.model.dto.request.SetPasswordRequest;
 import com.project.fedfaxe.repository.AdminRepository;
@@ -12,12 +13,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,14 +33,16 @@ public class AdminController {
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
     private final AdminService adminService;
+    private final MessageSource messageSource;
 
     @Autowired
     private JwtUtil jwtUtil;
 
-    public AdminController(AdminRepository adminRepository, PasswordEncoder passwordEncoder, AdminService adminService) {
+    public AdminController(AdminRepository adminRepository, PasswordEncoder passwordEncoder, AdminService adminService, MessageSource messageSource) {
         this.adminRepository = adminRepository;
         this.passwordEncoder = passwordEncoder;
         this.adminService = adminService;
+        this.messageSource = messageSource;
     }
 
 
@@ -93,9 +99,25 @@ public class AdminController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(example = "{ 'status': 'UNAUTHORIZED', 'message': 'Invalid token' }")))
     })
+//    @PostMapping("/set-password")
+//    public ResponseEntity<String> setPassword(@RequestBody SetPasswordRequest request, Locale locale) {
+//        adminService.setPassword(request);
+//        String successMessage = messageSource.getMessage("auth.password_changed", null, locale);
+//        return ResponseEntity.ok(successMessage);
+//       // return ResponseEntity.ok("Password changed successfully");
+//    }
+
     @PostMapping("/set-password")
     public ResponseEntity<String> setPassword(@RequestBody SetPasswordRequest request) {
         adminService.setPassword(request);
-        return ResponseEntity.ok("Password changed successfully");
+        Admin admin = adminRepository.findByEmail(request.getAdminEmail())
+                .orElseThrow(() -> new RuntimeException(
+                        messageSource.getMessage("user_not_found", null, Locale.ENGLISH) // or default locale
+                ));
+        Locale userLocale = Locale.forLanguageTag(admin.getPreferredLanguage());
+
+        String successMessage = messageSource.getMessage("auth.password_changed", null, userLocale);
+        return ResponseEntity.ok(successMessage);
     }
+
 }
