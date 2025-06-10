@@ -20,4 +20,5 @@ public class Admin {
     private String password;
     private boolean active;  // Default is false
     private UserRole role;
+    private String preferredLanguage; // e.g., "en", "fr", "es"
 }

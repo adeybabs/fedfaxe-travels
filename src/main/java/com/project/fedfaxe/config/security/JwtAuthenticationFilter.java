@@ -68,7 +68,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
         }
-
         // Proceed with the request if authentication is valid
         chain.doFilter(request, response);
     }

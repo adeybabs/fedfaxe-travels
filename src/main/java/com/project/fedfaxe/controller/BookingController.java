@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,6 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @Slf4j
@@ -37,13 +39,14 @@ import java.util.Map;
 @RequestMapping("/api/booking")
 public class BookingController {
 
-
+    private final MessageSource messageSource;
     private final StayRepository stayRepository;
     private final RideProductRepository rideRepository;
     private final PackageProductRepository packageRepository;
     private final PaystackService paystackService;
 
-    public BookingController(StayRepository stayRepository, RideProductRepository rideRepository, PackageProductRepository packageRepository, PaystackService paystackService) {
+    public BookingController(MessageSource messageSource, StayRepository stayRepository, RideProductRepository rideRepository, PackageProductRepository packageRepository, PaystackService paystackService) {
+        this.messageSource = messageSource;
         this.stayRepository = stayRepository;
         this.rideRepository = rideRepository;
         this.packageRepository = packageRepository;
@@ -198,10 +201,15 @@ public class BookingController {
     @PostMapping("/package")
     public ResponseEntity<Map<String, String>> initiatePackageBooking(
             @Valid @RequestBody BookPackageRequest request,
+            Locale locale,
             Authentication authentication
     ) {
+//        if (authentication == null) {
+//            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+//        }
         if (authentication == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    messageSource.getMessage("auth.not_authenticated", null, locale));
         }
         String userId = ((JwtAuthenticationToken) authentication).getToken().getSubject();
 

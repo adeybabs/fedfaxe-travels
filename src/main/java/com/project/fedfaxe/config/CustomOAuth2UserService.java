@@ -37,6 +37,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             newUser.setProvider(userRequest.getClientRegistration().getRegistrationId());
             newUser.setProviderId(oauthUser.getAttribute("sub"));
             newUser.setRole(UserRole.USER);
+            String locale = oauthUser.getAttribute("locale");
+            if (locale != null) {
+                newUser.setPreferredLanguage(locale);
+            } else {
+                newUser.setPreferredLanguage("en");
+            }
+
             userRepository.save(newUser);
         }
 

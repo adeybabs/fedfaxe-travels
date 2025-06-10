@@ -23,5 +23,6 @@ public class User {
     private String provider; // GOOGLE
     private String providerId; // Google user ID
     private UserRole role;
+    private String preferredLanguage; // e.g., "en", "fr", "es"
 
 }
